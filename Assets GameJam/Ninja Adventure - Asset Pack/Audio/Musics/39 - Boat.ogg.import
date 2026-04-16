@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://b2jh0jvmluau6"
+path="res://.godot/imported/39 - Boat.ogg-2a15dc9fb6345ee812ebe8bcf80def8a.oggvorbisstr"
+
+[deps]
+
+source_file="res://Assets GameJam/Ninja Adventure - Asset Pack/Audio/Musics/39 - Boat.ogg"
+dest_files=["res://.godot/imported/39 - Boat.ogg-2a15dc9fb6345ee812ebe8bcf80def8a.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dkynel660my8a"
+path="res://.godot/imported/PowerUp2.wav-88eaa5abec335c86b9230b9c574528ee.sample"
+
+[deps]
+
+source_file="res://Assets GameJam/Ninja Adventure - Asset Pack/Audio/Sounds/Bonus/PowerUp2.wav"
+dest_files=["res://.godot/imported/PowerUp2.wav-88eaa5abec335c86b9230b9c574528ee.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

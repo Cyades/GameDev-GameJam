@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://br2enl1vr14u2"]
+
+[ext_resource type="Script" uid="uid://dev5s2lgkxllo" path="res://Scripts/Player.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bsdlaeilb88ka" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Soldier/Soldier/Soldier.png" id="2_texture"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
+radius = 8.0
+height = 24.0
+
+[node name="Player" type="CharacterBody2D" unique_id=1157232075]
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1661184702]
+texture = ExtResource("2_texture")
+region_enabled = true
+region_rect = Rect2(41, 39, 15, 18)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=379362947]
+position = Vector2(0, 4)
+shape = SubResource("CapsuleShape2D_1")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=2133170976]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=401167855]
