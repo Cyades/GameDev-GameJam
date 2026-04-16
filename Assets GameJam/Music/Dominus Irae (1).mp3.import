@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://rrwfed2yernc"
+path="res://.godot/imported/Dominus Irae (1).mp3-2d274ef6aa1f7472b1073aa5221a9bba.mp3str"
+
+[deps]
+
+source_file="res://Assets GameJam/Music/Dominus Irae (1).mp3"
+dest_files=["res://.godot/imported/Dominus Irae (1).mp3-2d274ef6aa1f7472b1073aa5221a9bba.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

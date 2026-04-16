@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://g3hsuajlmdme"
+path="res://.godot/imported/Steel Anthem (1).mp3-ff4a8cc458de2d2fe23d9a254f91d4df.mp3str"
+
+[deps]
+
+source_file="res://Assets GameJam/Music/Steel Anthem (1).mp3"
+dest_files=["res://.godot/imported/Steel Anthem (1).mp3-ff4a8cc458de2d2fe23d9a254f91d4df.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

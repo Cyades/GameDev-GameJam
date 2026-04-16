@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bdoxh4ivuiryk"
+path="res://.godot/imported/Echo After the Fall (1).mp3-d5a68e6b12548fcaf0123da12e9e77c1.mp3str"
+
+[deps]
+
+source_file="res://Assets GameJam/Music/Echo After the Fall (1).mp3"
+dest_files=["res://.godot/imported/Echo After the Fall (1).mp3-d5a68e6b12548fcaf0123da12e9e77c1.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
