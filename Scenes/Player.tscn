@@ -384,6 +384,7 @@ animations = [{
 
 [node name="Player" type="CharacterBody2D" unique_id=1157232075]
 script = ExtResource("1_script")
+max_health = 2000
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1661184702]
 visible = false

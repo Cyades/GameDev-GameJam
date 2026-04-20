@@ -6,9 +6,15 @@ extends CharacterBody2D
 @export var melee_damage: int = 1
 @export var melee_interval: float = 0.65
 @export var melee_active_duration: float = 0.20
-@export var melee_radius: float = 26.0
+@export var melee_radius: float = 16.0
 @export var hurtbox_radius: float = 10.0
 @export var hurt_cooldown: float = 0.35
+@export var melee_hitbox_offset: float = 22.0
+@export var arrow_distance: float = 20.0
+# Dot product threshold for the directional cone.
+# 0.0 = strict 180° hemisphere (anything behind is rejected).
+# Raise toward 1.0 to narrow the cone further.
+@export var attack_cone_dot: float = 0.0
 
 const MOVEMENT_ANIMATIONS: Array[StringName] = [&"idle", &"walk", &"sprint"]
 const ACTION_ANIMATIONS: Array[StringName] = [&"attack01", &"attack02", &"attack03", &"hurt", &"death"]
@@ -21,6 +27,7 @@ const LAYER_ENEMY_HITBOX: int = 1 << 4
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 var facing_sign: float = 1.0
+var attack_direction: Vector2 = Vector2.RIGHT
 var current_action_animation: StringName = &""
 var is_dead: bool = false
 var health: int = 0
@@ -32,6 +39,10 @@ var hurt_cooldown_timer: Timer
 var hit_targets_this_swing: Dictionary = {}
 var selected_attack_index: int = 0
 
+var _arrow_node: Node2D
+var _arrow_polygon: Polygon2D
+var _arrow_shadow: Polygon2D
+
 func _ready() -> void:
 	if not is_in_group("player"):
 		add_to_group("player")
@@ -40,6 +51,7 @@ func _ready() -> void:
 	_setup_inputs()
 	_setup_combat_areas()
 	_setup_combat_timers()
+	_create_arrow_indicator()
 	_configure_animation_loops()
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
@@ -57,7 +69,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event.is_action_pressed("hurt"):
-		_trigger_action(&"hurt")
+		_play_animation(&"hurt")
 
 func _physics_process(_delta: float) -> void:
 	if is_dead or _is_action_locked():
@@ -72,8 +84,8 @@ func _physics_process(_delta: float) -> void:
 		var speed := walk_speed * (sprint_speed_multiplier if is_sprinting else 1.0)
 		velocity = direction * speed
 
-		if direction.x != 0.0:
-			facing_sign = sign(direction.x)
+		attack_direction = _snap_to_8way(direction)
+		facing_sign = sign(attack_direction.x) if attack_direction.x != 0.0 else facing_sign
 		animated_sprite.flip_h = facing_sign < 0.0
 		if not keep_attack_animation:
 			_play_animation(&"sprint" if is_sprinting else &"walk")
@@ -83,32 +95,94 @@ func _physics_process(_delta: float) -> void:
 			_play_animation(&"idle")
 
 	move_and_slide()
+	_update_arrow_indicator()
 	_check_hurtbox_overlap_damage()
+
+# ─── 8-way helpers ────────────────────────────────────────────────────────────
+
+func _snap_to_8way(dir: Vector2) -> Vector2:
+	if dir.length_squared() < 0.01:
+		return attack_direction
+	var angle: float = dir.angle()
+	var snapped: float = round(angle / (PI / 4.0)) * (PI / 4.0)
+	return Vector2.RIGHT.rotated(snapped)
+
+# Returns true only if the enemy is within the attack cone in front of the player.
+# Uses a dot product: dot(to_enemy, attack_direction) > attack_cone_dot
+# With attack_cone_dot = 0.0 this is a strict 180-degree hemisphere check —
+# any enemy whose center is behind or perpendicular to attack_direction is rejected,
+# no matter how close they are or how large the hitbox radii are.
+func _is_in_attack_cone(enemy: Node2D) -> bool:
+	var to_enemy: Vector2 = enemy.global_position - global_position
+	if to_enemy.length_squared() < 0.001:
+		return true  # Enemy is literally on top of player — always hits
+	return to_enemy.normalized().dot(attack_direction) > attack_cone_dot
+
+# ─── Arrow indicator ──────────────────────────────────────────────────────────
+
+func _create_arrow_indicator() -> void:
+	_arrow_node = Node2D.new()
+	_arrow_node.name = "ArrowIndicator"
+	_arrow_node.z_index = 10
+	add_child(_arrow_node)
+
+	var tip: float    = arrow_distance
+	var base: float   = tip - 9.0
+	var half_w: float = 4.5
+	var notch: float  = base + 3.5
+	var arrow_verts := PackedVector2Array([
+		Vector2(tip,    0.0),
+		Vector2(base,  -half_w),
+		Vector2(notch,  0.0),
+		Vector2(base,   half_w),
+	])
+
+	_arrow_shadow = Polygon2D.new()
+	_arrow_shadow.polygon  = arrow_verts
+	_arrow_shadow.color    = Color(0.0, 0.0, 0.0, 0.55)
+	_arrow_shadow.position = Vector2(1.0, 1.0)
+	_arrow_node.add_child(_arrow_shadow)
+
+	_arrow_polygon = Polygon2D.new()
+	_arrow_polygon.polygon = arrow_verts
+	_arrow_polygon.color   = Color(1.0, 0.92, 0.18, 0.95)
+	_arrow_node.add_child(_arrow_polygon)
+
+	_update_arrow_indicator()
+
+func _update_arrow_indicator() -> void:
+	if _arrow_node == null:
+		return
+	_arrow_node.rotation = attack_direction.angle()
+	if _arrow_polygon != null:
+		if melee_window_timer != null and melee_window_timer.time_left > 0.0:
+			_arrow_polygon.color = Color(1.0, 0.4, 0.1, 1.0)
+		else:
+			_arrow_polygon.color = Color(1.0, 0.92, 0.18, 0.95)
+
+# ─── Combat ───────────────────────────────────────────────────────────────────
 
 func _setup_inputs() -> void:
 	var defaults := {
-		"move_up": KEY_W,
-		"move_down": KEY_S,
-		"move_left": KEY_A,
+		"move_up":    KEY_W,
+		"move_down":  KEY_S,
+		"move_left":  KEY_A,
 		"move_right": KEY_D,
-		"sprint": KEY_SHIFT,
-		"attack_1": KEY_1,
-		"attack_2": KEY_2,
-		"attack_3": KEY_3,
-		"hurt": KEY_H,
-		"die": KEY_X
+		"sprint":     KEY_SHIFT,
+		"attack_1":   KEY_1,
+		"attack_2":   KEY_2,
+		"attack_3":   KEY_3,
+		"hurt":       KEY_H,
+		"die":        KEY_X
 	}
-
 	for action_name in defaults.keys():
 		_ensure_action(action_name, defaults[action_name])
 
 func _ensure_action(action_name: StringName, keycode: int) -> void:
 	if not InputMap.has_action(action_name):
 		InputMap.add_action(action_name)
-
 	if not InputMap.action_get_events(action_name).is_empty():
 		return
-
 	var event := InputEventKey.new()
 	event.physical_keycode = keycode
 	event.keycode = keycode
@@ -116,11 +190,10 @@ func _ensure_action(action_name: StringName, keycode: int) -> void:
 
 func _setup_combat_areas() -> void:
 	melee_hitbox = _get_or_create_area("MeleeHitbox")
-	melee_hitbox.position = Vector2(0, 4)
 	melee_hitbox.monitorable = true
-	melee_hitbox.monitoring = false
+	melee_hitbox.monitoring  = false
 	melee_hitbox.collision_layer = LAYER_PLAYER_HITBOX
-	melee_hitbox.collision_mask = LAYER_ENEMY_HURTBOX
+	melee_hitbox.collision_mask  = LAYER_ENEMY_HURTBOX
 	if not melee_hitbox.is_in_group("player_hitbox"):
 		melee_hitbox.add_to_group("player_hitbox")
 	_configure_circle_shape(melee_hitbox, melee_radius)
@@ -128,11 +201,11 @@ func _setup_combat_areas() -> void:
 		melee_hitbox.area_entered.connect(_on_melee_hitbox_area_entered)
 
 	player_hurtbox = _get_or_create_area("Hurtbox")
-	player_hurtbox.position = Vector2(0, 4)
+	player_hurtbox.position    = Vector2(0, 4)
 	player_hurtbox.monitorable = true
-	player_hurtbox.monitoring = true
+	player_hurtbox.monitoring  = true
 	player_hurtbox.collision_layer = LAYER_PLAYER_HURTBOX
-	player_hurtbox.collision_mask = LAYER_ENEMY_HITBOX
+	player_hurtbox.collision_mask  = LAYER_ENEMY_HITBOX
 	if not player_hurtbox.is_in_group("player_hurtbox"):
 		player_hurtbox.add_to_group("player_hurtbox")
 	_configure_circle_shape(player_hurtbox, hurtbox_radius)
@@ -141,8 +214,8 @@ func _setup_combat_areas() -> void:
 
 func _setup_combat_timers() -> void:
 	melee_cycle_timer = _get_or_create_timer("MeleeCycleTimer")
-	melee_cycle_timer.one_shot = false
-	melee_cycle_timer.wait_time = max(melee_interval, 0.05)
+	melee_cycle_timer.one_shot   = false
+	melee_cycle_timer.wait_time  = max(melee_interval, 0.05)
 	if not melee_cycle_timer.timeout.is_connected(_on_melee_cycle_timer_timeout):
 		melee_cycle_timer.timeout.connect(_on_melee_cycle_timer_timeout)
 	melee_cycle_timer.start()
@@ -158,15 +231,15 @@ func _setup_combat_timers() -> void:
 func _on_melee_cycle_timer_timeout() -> void:
 	if is_dead:
 		return
-
 	_start_melee_swing()
 
 func _start_melee_swing() -> void:
 	if _is_action_locked():
 		return
-
 	if melee_window_timer != null and melee_window_timer.time_left > 0.0:
 		return
+
+	melee_hitbox.position = Vector2(0.0, 4.0) + attack_direction * melee_hitbox_offset
 
 	hit_targets_this_swing.clear()
 	melee_hitbox.monitoring = true
@@ -179,32 +252,26 @@ func _start_melee_swing() -> void:
 func _handle_attack_switch_input(event: InputEvent) -> bool:
 	if is_dead:
 		return false
-
 	if _is_attack_slot_pressed(event, &"attack_1", KEY_1, KEY_KP_1):
 		_set_selected_attack(0)
 		_start_melee_swing()
 		return true
-
 	if _is_attack_slot_pressed(event, &"attack_2", KEY_2, KEY_KP_2):
 		_set_selected_attack(1)
 		_start_melee_swing()
 		return true
-
 	if _is_attack_slot_pressed(event, &"attack_3", KEY_3, KEY_KP_3):
 		_set_selected_attack(2)
 		_start_melee_swing()
 		return true
-
 	return false
 
 func _is_attack_slot_pressed(event: InputEvent, action_name: StringName, number_key: int, keypad_key: int) -> bool:
 	if event.is_action_pressed(action_name):
 		return true
-
 	var key_event := event as InputEventKey
 	if key_event == null or not key_event.pressed or key_event.echo:
 		return false
-
 	return (
 		key_event.keycode == number_key
 		or key_event.physical_keycode == number_key
@@ -224,7 +291,6 @@ func _on_melee_window_timer_timeout() -> void:
 func _apply_melee_damage() -> void:
 	if melee_hitbox == null or not melee_hitbox.monitoring:
 		return
-
 	for area in melee_hitbox.get_overlapping_areas():
 		_try_damage_enemy_from_hurtbox(area)
 
@@ -237,6 +303,11 @@ func _try_damage_enemy_from_hurtbox(area: Area2D) -> void:
 
 	var enemy := area.get_parent()
 	if enemy == null or not is_instance_valid(enemy):
+		return
+
+	# Hard directional gate: reject the hit if the enemy is not inside
+	# the attack cone, regardless of hitbox geometry.
+	if not _is_in_attack_cone(enemy):
 		return
 
 	var enemy_id := enemy.get_instance_id()
@@ -253,10 +324,8 @@ func _on_player_hurtbox_area_entered(area: Area2D) -> void:
 func _check_hurtbox_overlap_damage() -> void:
 	if player_hurtbox == null:
 		return
-
 	if hurt_cooldown_timer != null and hurt_cooldown_timer.time_left > 0.0:
 		return
-
 	for area in player_hurtbox.get_overlapping_areas():
 		if _try_receive_contact_damage(area):
 			break
@@ -264,45 +333,38 @@ func _check_hurtbox_overlap_damage() -> void:
 func _try_receive_contact_damage(area: Area2D) -> bool:
 	if is_dead:
 		return false
-
 	if hurt_cooldown_timer != null and hurt_cooldown_timer.time_left > 0.0:
 		return false
-
 	if area == null or not area.is_in_group("enemy_hitbox"):
 		return false
-
 	var source := area.get_parent()
 	var damage := 1
 	if source != null and source.has_method("get_contact_damage"):
 		damage = int(source.call("get_contact_damage"))
-
 	take_damage(damage)
 	return true
 
 func take_damage(amount: int = 1) -> void:
 	if is_dead:
 		return
-
 	var applied_damage: int = maxi(amount, 0)
 	if applied_damage <= 0:
 		return
-
 	health = maxi(health - applied_damage, 0)
 	if health <= 0:
 		_trigger_death()
 		return
-
 	if _has_animation(&"hurt"):
-		_trigger_action(&"hurt")
-
+		_play_animation(&"hurt")
 	if hurt_cooldown_timer != null:
 		hurt_cooldown_timer.start(max(hurt_cooldown, 0.01))
+
+# ─── Node helpers ─────────────────────────────────────────────────────────────
 
 func _get_or_create_area(node_name: String) -> Area2D:
 	var area := get_node_or_null(node_name) as Area2D
 	if area != null:
 		return area
-
 	area = Area2D.new()
 	area.name = node_name
 	add_child(area)
@@ -312,7 +374,6 @@ func _get_or_create_timer(node_name: String) -> Timer:
 	var timer := get_node_or_null(node_name) as Timer
 	if timer != null:
 		return timer
-
 	timer = Timer.new()
 	timer.name = node_name
 	add_child(timer)
@@ -324,23 +385,21 @@ func _configure_circle_shape(area: Area2D, radius: float) -> void:
 		collision_shape = CollisionShape2D.new()
 		collision_shape.name = "CollisionShape2D"
 		area.add_child(collision_shape)
-
 	var circle := collision_shape.shape as CircleShape2D
 	if circle == null:
 		circle = CircleShape2D.new()
 		collision_shape.shape = circle
-
 	circle.radius = max(radius, 1.0)
+
+# ─── Animation helpers ────────────────────────────────────────────────────────
 
 func _configure_animation_loops() -> void:
 	var frames := animated_sprite.sprite_frames
 	if frames == null:
 		return
-
 	for animation_name in MOVEMENT_ANIMATIONS:
 		if frames.has_animation(animation_name):
 			frames.set_animation_loop(animation_name, true)
-
 	for animation_name in ACTION_ANIMATIONS:
 		if frames.has_animation(animation_name):
 			frames.set_animation_loop(animation_name, false)
@@ -355,7 +414,6 @@ func _trigger_action(animation_name: StringName) -> void:
 func _trigger_death() -> void:
 	if is_dead:
 		return
-
 	is_dead = true
 	velocity = Vector2.ZERO
 	if melee_cycle_timer != null:
@@ -366,14 +424,14 @@ func _trigger_death() -> void:
 		melee_hitbox.monitoring = false
 	if player_hurtbox != null:
 		player_hurtbox.monitoring = false
-
+	if _arrow_node != null:
+		_arrow_node.visible = false
 	_trigger_action(&"death")
 
 func _on_animation_finished() -> void:
 	if animated_sprite.animation == &"death":
 		animated_sprite.pause()
 		return
-
 	if animated_sprite.animation == current_action_animation:
 		current_action_animation = &""
 
@@ -383,7 +441,6 @@ func _is_action_locked() -> bool:
 func _play_animation(animation_name: StringName) -> void:
 	if not _has_animation(animation_name):
 		return
-
 	if animated_sprite.animation != animation_name or not animated_sprite.is_playing():
 		animated_sprite.play(animation_name)
 
