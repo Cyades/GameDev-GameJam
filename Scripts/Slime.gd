@@ -14,6 +14,7 @@ const LAYER_PLAYER_HURTBOX: int = 1 << 1
 const LAYER_PLAYER_HITBOX: int = 1 << 2
 const LAYER_ENEMY_HURTBOX: int = 1 << 3
 const LAYER_ENEMY_HITBOX: int = 1 << 4
+const EXP_GEM_SCENE: PackedScene = preload("res://Scenes/ExpGem.tscn")
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -163,6 +164,10 @@ func _trigger_action(animation_name: StringName) -> void:
 
 func _on_animation_finished() -> void:
 	if animated_sprite.animation == &"death":
+		if EXP_GEM_SCENE:
+			var gem = EXP_GEM_SCENE.instantiate() as Area2D
+			get_parent().add_child(gem)
+			gem.global_position = global_position
 		queue_free()
 		return
 

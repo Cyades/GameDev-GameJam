@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://df72kjd8atad"]
+
+[ext_resource type="Script" path="res://Scripts/ExpGem.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dummy" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Items/Resource/GemGreen.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_gem"]
+radius = 6.0
+
+[node name="ExpGem" type="Area2D"]
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("2_texture")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_gem")

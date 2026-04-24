@@ -20,6 +20,7 @@ const LAYER_PLAYER_HURTBOX: int = 1 << 1
 const LAYER_PLAYER_HITBOX: int = 1 << 2
 const LAYER_ENEMY_HURTBOX: int = 1 << 3
 const LAYER_ENEMY_HITBOX: int = 1 << 4
+const LAYER_ITEM: int = 1 << 5
 const ARROW_SCENE: PackedScene = preload("res://Scenes/Arrow.tscn")
 
 
@@ -41,6 +42,13 @@ var selected_attack_index: int = 0
 var _arrow_node: Node2D
 var _arrow_polygon: Polygon2D
 var _arrow_shadow: Polygon2D
+
+@export var magnet_radius: float = 120.0
+@export var pickup_radius: float = 16.0
+var exp: int = 0
+
+var magnet_area: Area2D
+var pickup_area: Area2D
 
 func _ready() -> void:
 	if not is_in_group("player"):
@@ -209,6 +217,24 @@ func _setup_combat_areas() -> void:
 	if not player_hurtbox.area_entered.is_connected(_on_player_hurtbox_area_entered):
 		player_hurtbox.area_entered.connect(_on_player_hurtbox_area_entered)
 
+	magnet_area = _get_or_create_area("MagnetArea")
+	magnet_area.monitorable = false
+	magnet_area.monitoring = true
+	magnet_area.collision_layer = 0
+	magnet_area.collision_mask = LAYER_ITEM
+	_configure_circle_shape(magnet_area, magnet_radius)
+	if not magnet_area.area_entered.is_connected(_on_magnet_area_entered):
+		magnet_area.area_entered.connect(_on_magnet_area_entered)
+
+	pickup_area = _get_or_create_area("PickupArea")
+	pickup_area.monitorable = false
+	pickup_area.monitoring = true
+	pickup_area.collision_layer = 0
+	pickup_area.collision_mask = LAYER_ITEM
+	_configure_circle_shape(pickup_area, pickup_radius)
+	if not pickup_area.area_entered.is_connected(_on_pickup_area_entered):
+		pickup_area.area_entered.connect(_on_pickup_area_entered)
+
 func _setup_combat_timers() -> void:
 	melee_cycle_timer = _get_or_create_timer("MeleeCycleTimer")
 	melee_cycle_timer.one_shot   = false
@@ -370,6 +396,16 @@ func take_damage(amount: int = 1) -> void:
 		_play_animation(&"hurt")
 	if hurt_cooldown_timer != null:
 		hurt_cooldown_timer.start(max(hurt_cooldown, 0.01))
+
+func _on_magnet_area_entered(area: Area2D) -> void:
+	if area.is_in_group("exp_gem") and area.has_method("fly_to"):
+		area.fly_to(self)
+
+func _on_pickup_area_entered(area: Area2D) -> void:
+	if area.is_in_group("exp_gem") and area.has_method("collect"):
+		var gained_exp = area.collect()
+		exp += gained_exp
+		print("Gained EXP! Total EXP: ", exp)
 
 # ─── Node helpers ─────────────────────────────────────────────────────────────
 
