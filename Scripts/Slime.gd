@@ -79,12 +79,17 @@ func play_death() -> void:
 
 	is_dead = true
 	velocity = Vector2.ZERO
+
+	# Use set_deferred because this may be called from inside a physics
+	# signal (area_entered / take_damage chain), where the physics server
+	# is locked and direct property writes to monitorable/monitoring crash.
 	if hurtbox != null:
-		hurtbox.monitoring = false
-		hurtbox.monitorable = false
+		hurtbox.set_deferred("monitoring", false)
+		hurtbox.set_deferred("monitorable", false)
 	if contact_hitbox != null:
-		contact_hitbox.monitoring = false
-		contact_hitbox.monitorable = false
+		contact_hitbox.set_deferred("monitoring", false)
+		contact_hitbox.set_deferred("monitorable", false)
+
 	_trigger_action(&"death")
 
 func take_damage(amount: int = 1) -> void:

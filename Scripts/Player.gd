@@ -11,9 +11,6 @@ extends CharacterBody2D
 @export var hurt_cooldown: float = 0.35
 @export var melee_hitbox_offset: float = 22.0
 @export var arrow_distance: float = 20.0
-# Dot product threshold for the directional cone.
-# 0.0 = strict 180° hemisphere (anything behind is rejected).
-# Raise toward 1.0 to narrow the cone further.
 @export var attack_cone_dot: float = 0.0
 
 const MOVEMENT_ANIMATIONS: Array[StringName] = [&"idle", &"walk", &"sprint"]
@@ -23,6 +20,8 @@ const LAYER_PLAYER_HURTBOX: int = 1 << 1
 const LAYER_PLAYER_HITBOX: int = 1 << 2
 const LAYER_ENEMY_HURTBOX: int = 1 << 3
 const LAYER_ENEMY_HITBOX: int = 1 << 4
+const ARROW_SCENE: PackedScene = preload("res://Scenes/Arrow.tscn")
+
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -103,19 +102,15 @@ func _physics_process(_delta: float) -> void:
 func _snap_to_8way(dir: Vector2) -> Vector2:
 	if dir.length_squared() < 0.01:
 		return attack_direction
-	var angle: float = dir.angle()
-	var snapped: float = round(angle / (PI / 4.0)) * (PI / 4.0)
-	return Vector2.RIGHT.rotated(snapped)
+	var angle_rad: float = dir.angle()
+	# Renamed from "snapped" — that shadows the GDScript built-in function
+	var snapped_angle: float = round(angle_rad / (PI / 4.0)) * (PI / 4.0)
+	return Vector2.RIGHT.rotated(snapped_angle)
 
-# Returns true only if the enemy is within the attack cone in front of the player.
-# Uses a dot product: dot(to_enemy, attack_direction) > attack_cone_dot
-# With attack_cone_dot = 0.0 this is a strict 180-degree hemisphere check —
-# any enemy whose center is behind or perpendicular to attack_direction is rejected,
-# no matter how close they are or how large the hitbox radii are.
 func _is_in_attack_cone(enemy: Node2D) -> bool:
 	var to_enemy: Vector2 = enemy.global_position - global_position
 	if to_enemy.length_squared() < 0.001:
-		return true  # Enemy is literally on top of player — always hits
+		return true
 	return to_enemy.normalized().dot(attack_direction) > attack_cone_dot
 
 # ─── Arrow indicator ──────────────────────────────────────────────────────────
@@ -163,7 +158,8 @@ func _update_arrow_indicator() -> void:
 # ─── Combat ───────────────────────────────────────────────────────────────────
 
 func _setup_inputs() -> void:
-	var defaults := {
+	# Values typed as Key enum to avoid INT_AS_ENUM_WITHOUT_CAST warnings
+	var defaults: Dictionary = {
 		"move_up":    KEY_W,
 		"move_down":  KEY_S,
 		"move_left":  KEY_A,
@@ -175,15 +171,16 @@ func _setup_inputs() -> void:
 		"hurt":       KEY_H,
 		"die":        KEY_X
 	}
-	for action_name in defaults.keys():
-		_ensure_action(action_name, defaults[action_name])
+	for action_name: String in defaults:
+		_ensure_action(action_name, defaults[action_name] as Key)
 
-func _ensure_action(action_name: StringName, keycode: int) -> void:
+func _ensure_action(action_name: StringName, keycode: Key) -> void:
 	if not InputMap.has_action(action_name):
 		InputMap.add_action(action_name)
 	if not InputMap.action_get_events(action_name).is_empty():
 		return
 	var event := InputEventKey.new()
+	# Assign with Key enum type directly — no cast warning
 	event.physical_keycode = keycode
 	event.keycode = keycode
 	InputMap.action_add_event(action_name, event)
@@ -242,12 +239,29 @@ func _start_melee_swing() -> void:
 	melee_hitbox.position = Vector2(0.0, 4.0) + attack_direction * melee_hitbox_offset
 
 	hit_targets_this_swing.clear()
-	melee_hitbox.monitoring = true
 	var attack_animation := _get_selected_attack_animation()
 	if _has_animation(attack_animation):
 		_play_animation(attack_animation)
-	call_deferred("_apply_melee_damage")
+		
+	if attack_animation == &"attack03":
+		melee_hitbox.monitoring = false
+		_spawn_arrow()
+	else:
+		melee_hitbox.monitoring = true
+		call_deferred("_apply_melee_damage")
+		
 	melee_window_timer.start(max(melee_active_duration, 0.8))
+
+func _spawn_arrow() -> void:
+	if ARROW_SCENE == null:
+		return
+	var arrow = ARROW_SCENE.instantiate() as Area2D
+	get_parent().add_child(arrow)
+	
+	# Initial position: start slightly offset from player center
+	arrow.global_position = global_position + Vector2(0, 4) + attack_direction * 10
+	arrow.rotation = attack_direction.angle()
+	arrow.direction = attack_direction
 
 func _handle_attack_switch_input(event: InputEvent) -> bool:
 	if is_dead:
@@ -266,7 +280,7 @@ func _handle_attack_switch_input(event: InputEvent) -> bool:
 		return true
 	return false
 
-func _is_attack_slot_pressed(event: InputEvent, action_name: StringName, number_key: int, keypad_key: int) -> bool:
+func _is_attack_slot_pressed(event: InputEvent, action_name: StringName, number_key: Key, keypad_key: Key) -> bool:
 	if event.is_action_pressed(action_name):
 		return true
 	var key_event := event as InputEventKey
@@ -305,8 +319,6 @@ func _try_damage_enemy_from_hurtbox(area: Area2D) -> void:
 	if enemy == null or not is_instance_valid(enemy):
 		return
 
-	# Hard directional gate: reject the hit if the enemy is not inside
-	# the attack cone, regardless of hitbox geometry.
 	if not _is_in_attack_cone(enemy):
 		return
 

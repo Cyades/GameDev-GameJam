@@ -312,6 +312,7 @@ radius = 10.198039
 
 [node name="Slime" type="CharacterBody2D" unique_id=1877278351]
 script = ExtResource("1_script")
+max_health = 2
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1996068161]
 visible = false
@@ -322,7 +323,7 @@ region_rect = Rect2(0, 0, 100, 100)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2095597073]
 sprite_frames = SubResource("SpriteFrames_xay55")
-animation = &"attack02"
+animation = &"death"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1058983991]
 position = Vector2(0, 4)
