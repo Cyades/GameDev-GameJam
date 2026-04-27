@@ -322,8 +322,9 @@ region_enabled = true
 region_rect = Rect2(0, 0, 100, 100)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2095597073]
+texture_filter = 1
 sprite_frames = SubResource("SpriteFrames_xay55")
-animation = &"death"
+animation = &"attack01"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1058983991]
 position = Vector2(0, 4)
