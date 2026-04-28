@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 @export var walk_speed: float = 150.0
 @export var sprint_speed_multiplier: float = 1.6
-@export var max_health: int = 100000
+@export var max_health: int = 20
 @export var melee_damage: int = 1
 @export var melee_interval: float = 0.65
 @export var melee_active_duration: float = 0.20
