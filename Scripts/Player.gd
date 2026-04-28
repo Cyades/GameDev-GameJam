@@ -25,6 +25,8 @@ const ARROW_SCENE: PackedScene = preload("res://Scenes/Arrow.tscn")
 
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var health_bar: TextureProgressBar = $HealthBar
+
 
 var facing_sign: float = 1.0
 var attack_direction: Vector2 = Vector2.RIGHT
@@ -45,16 +47,28 @@ var _arrow_shadow: Polygon2D
 
 @export var magnet_radius: float = 120.0
 @export var pickup_radius: float = 16.0
-var exp: int = 0
+@export var base_exp_threshold: int = 10
+
+var current_exp: int = 0
+var current_level: int = 1
 
 var magnet_area: Area2D
 var pickup_area: Area2D
+
+# HUD EXP bar references
+var exp_canvas_layer: CanvasLayer
+var exp_bar: ProgressBar
+var level_label: Label
 
 func _ready() -> void:
 	if not is_in_group("player"):
 		add_to_group("player")
 
 	health = max_health
+	_setup_health_bar()
+	_update_health_bar()
+	_create_exp_hud()
+	_update_exp_bar()
 	_setup_inputs()
 	_setup_combat_areas()
 	_setup_combat_timers()
@@ -389,6 +403,7 @@ func take_damage(amount: int = 1) -> void:
 	if applied_damage <= 0:
 		return
 	health = maxi(health - applied_damage, 0)
+	_update_health_bar()
 	if health <= 0:
 		_trigger_death()
 		return
@@ -404,8 +419,7 @@ func _on_magnet_area_entered(area: Area2D) -> void:
 func _on_pickup_area_entered(area: Area2D) -> void:
 	if area.is_in_group("exp_gem") and area.has_method("collect"):
 		var gained_exp = area.collect()
-		exp += gained_exp
-		print("Gained EXP! Total EXP: ", exp)
+		gain_exp(gained_exp)
 
 # ─── Node helpers ─────────────────────────────────────────────────────────────
 
@@ -438,6 +452,117 @@ func _configure_circle_shape(area: Area2D, radius: float) -> void:
 		circle = CircleShape2D.new()
 		collision_shape.shape = circle
 	circle.radius = max(radius, 1.0)
+
+func _setup_health_bar() -> void:
+	if health_bar == null:
+		return
+	# Make visible and position centered above the character
+	health_bar.visible = true
+	health_bar.scale = Vector2(0.35, 0.35)
+	# Center horizontally: half the bar width (64 * 0.35 / 2 = ~11)
+	var half_bar := 64.0 * 0.35 / 2.0
+	health_bar.position = Vector2(-half_bar - 12.0, -18.0)
+
+func _update_health_bar() -> void:
+	if health_bar == null:
+		return
+	health_bar.max_value = max(max_health, 1)
+	health_bar.value = clampi(health, 0, max_health)
+
+# ─── EXP / Level system ───────────────────────────────────────────────────────
+
+func _create_exp_hud() -> void:
+	# CanvasLayer so the EXP bar is fixed on screen
+	exp_canvas_layer = CanvasLayer.new()
+	exp_canvas_layer.name = "EXPCanvasLayer"
+	exp_canvas_layer.layer = 100
+	add_child(exp_canvas_layer)
+
+	var vp_size := get_viewport_rect().size
+
+	# EXP progress bar — full width at the top of the screen
+	exp_bar = ProgressBar.new()
+	exp_bar.name = "EXPBar"
+	exp_bar.show_percentage = false
+	exp_bar.anchor_left = 0.0
+	exp_bar.anchor_top = 0.0
+	exp_bar.anchor_right = 1.0
+	exp_bar.anchor_bottom = 0.0
+	exp_bar.offset_left = 0.0
+	exp_bar.offset_top = 0.0
+	exp_bar.offset_right = 0.0
+	exp_bar.offset_bottom = 4.0
+	exp_bar.custom_minimum_size = Vector2(0.0, 4.0)
+	exp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Style the bar background
+	var bg_style := StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.15, 0.15, 0.2, 0.85)
+	bg_style.corner_radius_top_left = 0
+	bg_style.corner_radius_top_right = 0
+	bg_style.corner_radius_bottom_left = 0
+	bg_style.corner_radius_bottom_right = 0
+	bg_style.content_margin_left = 0
+	bg_style.content_margin_right = 0
+	bg_style.content_margin_top = 0
+	bg_style.content_margin_bottom = 0
+	exp_bar.add_theme_stylebox_override("background", bg_style)
+
+	# Style the fill
+	var fill_style := StyleBoxFlat.new()
+	fill_style.bg_color = Color(0.2, 0.85, 1.0, 0.95)
+	fill_style.corner_radius_top_left = 0
+	fill_style.corner_radius_top_right = 0
+	fill_style.corner_radius_bottom_left = 0
+	fill_style.corner_radius_bottom_right = 0
+	fill_style.content_margin_left = 0
+	fill_style.content_margin_right = 0
+	fill_style.content_margin_top = 0
+	fill_style.content_margin_bottom = 0
+	exp_bar.add_theme_stylebox_override("fill", fill_style)
+
+	exp_canvas_layer.add_child(exp_bar)
+
+	# Level label — left side, next to the bar
+	level_label = Label.new()
+	level_label.name = "LevelLabel"
+	level_label.text = "Lv. 1"
+	level_label.position = Vector2(10.0, 15.0)
+	level_label.add_theme_font_size_override("font_size", 8)
+	level_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.9))
+	level_label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.7))
+	level_label.add_theme_constant_override("shadow_offset_x", 1)
+	level_label.add_theme_constant_override("shadow_offset_y", 1)
+	level_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	exp_canvas_layer.add_child(level_label)
+
+func _get_max_exp() -> int:
+	# Scaling threshold: higher level = more EXP needed
+	# Formula: base_exp_threshold * level ^ 1.5
+	return int(base_exp_threshold * pow(current_level, 1.5))
+
+func gain_exp(amount: int) -> void:
+	current_exp += amount
+	var max_exp := _get_max_exp()
+	# Level up loop (in case gained enough for multiple levels)
+	while current_exp >= max_exp:
+		current_exp -= max_exp
+		_level_up()
+		max_exp = _get_max_exp()
+	_update_exp_bar()
+
+func _level_up() -> void:
+	current_level += 1
+	print("LEVEL UP! Now level: ", current_level)
+	if level_label != null:
+		level_label.text = "Lv. " + str(current_level)
+
+func _update_exp_bar() -> void:
+	if exp_bar == null:
+		return
+	var max_exp := _get_max_exp()
+	exp_bar.max_value = max(max_exp, 1)
+	exp_bar.value = clampi(current_exp, 0, max_exp)
 
 # ─── Animation helpers ────────────────────────────────────────────────────────
 
