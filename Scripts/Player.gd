@@ -412,6 +412,12 @@ func take_damage(amount: int = 1) -> void:
 	if hurt_cooldown_timer != null:
 		hurt_cooldown_timer.start(max(hurt_cooldown, 0.01))
 
+func receive_heal(amount: int) -> void:
+	if is_dead:
+		return
+	health = mini(health + amount, max_health)
+	_update_health_bar()
+
 func _on_magnet_area_entered(area: Area2D) -> void:
 	if area.is_in_group("exp_gem") and area.has_method("fly_to"):
 		area.fly_to(self)
