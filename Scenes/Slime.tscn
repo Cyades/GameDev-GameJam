@@ -312,7 +312,6 @@ radius = 10.198039
 
 [node name="Slime" type="CharacterBody2D" unique_id=1877278351]
 script = ExtResource("1_script")
-max_health = 2
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1996068161]
 visible = false

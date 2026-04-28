@@ -9,9 +9,9 @@
 [ext_resource type="Texture2D" uid="uid://dkd2od1o2qv3o" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Soldier/Soldier with shadows/Soldier-Attack03.png" id="5_ksbbd"]
 [ext_resource type="Texture2D" uid="uid://wd33vo6yycw7" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Soldier/Soldier with shadows/Soldier-Death.png" id="6_glx4g"]
 [ext_resource type="Texture2D" uid="uid://da577xausymti" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Soldier/Soldier with shadows/Soldier-Hurt.png" id="7_miouo"]
-[ext_resource type="Texture2D" uid="uid://bb6mesggl7vph" path="res://Assets GameJam/Pixel Health Bar/Bar/no health bar.png" id="8_health_bg"]
-[ext_resource type="Texture2D" uid="uid://fwl83wl7mb3x" path="res://Assets GameJam/Pixel Health Bar/Bar/health bar.png" id="9_health_fill"]
-[ext_resource type="Texture2D" uid="uid://ckrr6pcni1f7q" path="res://Assets GameJam/Pixel Health Bar/Bar/empty health bar.png" id="10_health_frame"]
+[ext_resource type="Texture2D" uid="uid://cpp8w5xfwi1ea" path="res://Assets GameJam/Pixel Health Bar/Bar/no health bar.png" id="8_health_bg"]
+[ext_resource type="Texture2D" uid="uid://dyscjbfoxv6bv" path="res://Assets GameJam/Pixel Health Bar/Bar/health bar.png" id="9_health_fill"]
+[ext_resource type="Texture2D" uid="uid://bxu4g4p5ewg7m" path="res://Assets GameJam/Pixel Health Bar/Bar/empty health bar.png" id="10_health_frame"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
 radius = 8.0
@@ -387,7 +387,6 @@ animations = [{
 
 [node name="Player" type="CharacterBody2D" unique_id=1157232075]
 script = ExtResource("1_script")
-max_health = 2000
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1661184702]
 visible = false
@@ -413,16 +412,15 @@ frame_progress = 0.576337
 
 [node name="HealthBar" type="TextureProgressBar" parent="." unique_id=612461900]
 visible = false
-texture_filter = 1
 z_index = 20
+texture_filter = 1
 offset_left = -32.0
 offset_top = -22.0
 offset_right = 32.0
 offset_bottom = -14.0
 scale = Vector2(0.5, 0.5)
-show_percentage = false
 mouse_filter = 2
 value = 100.0
 texture_under = ExtResource("8_health_bg")
-texture_progress = ExtResource("9_health_fill")
 texture_over = ExtResource("10_health_frame")
+texture_progress = ExtResource("9_health_fill")

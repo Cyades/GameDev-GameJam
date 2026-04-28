@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://bpdrktftw1g1u"]
+[gd_scene load_steps=10 format=3 uid="uid://bpdrktftw1g1u"]
 
 [ext_resource type="Texture2D" uid="uid://bjgivblxnmjxw" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Werebear/Werebear with shadows/Werebear-Attack01.png" id="1_l7fnd"]
 [ext_resource type="Texture2D" uid="uid://dnng2yayb5goe" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Werebear/Werebear with shadows/Werebear-Attack02.png" id="2_k1dbf"]
@@ -7,6 +7,11 @@
 [ext_resource type="Texture2D" uid="uid://moqtr5gyviuv" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Werebear/Werebear with shadows/Werebear-Hurt.png" id="5_iuk3a"]
 [ext_resource type="Texture2D" uid="uid://btnxbj0mymjyy" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Werebear/Werebear with shadows/Werebear-Idle.png" id="6_fwdt3"]
 [ext_resource type="Texture2D" uid="uid://dbwsfxhgfjvmt" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Werebear/Werebear with shadows/Werebear-Walk.png" id="7_6xx0x"]
+[ext_resource type="Script" path="res://Scripts/Werebear.gd" id="8_script"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_werebear"]
+radius = 12.0
+height = 32.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8awp7"]
 atlas = ExtResource("1_l7fnd")
@@ -418,10 +423,16 @@ animations = [{
 }]
 
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=325664690]
+script = ExtResource("8_script")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=697314891]
 texture_filter = 1
+position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_g6w3y")
-animation = &"walk"
+animation = &"idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("CapsuleShape2D_werebear")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=807725045]

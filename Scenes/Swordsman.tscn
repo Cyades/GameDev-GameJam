@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://cwqi7yj62gqtn"]
+[gd_scene format=3 uid="uid://cwqi7yj62gqtn"]
 
 [ext_resource type="Texture2D" uid="uid://doketrslgik0q" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Swordsman/Swordsman with shadows/Swordsman-Attack01.png" id="1_njcxw"]
 [ext_resource type="Texture2D" uid="uid://hqp8ivkk2jtc" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Swordsman/Swordsman with shadows/Swordsman-Attack02.png" id="2_pocaq"]
@@ -7,11 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://bb7etjmk0qavq" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Swordsman/Swordsman with shadows/Swordsman-Hurt.png" id="5_q2j2w"]
 [ext_resource type="Texture2D" uid="uid://cuvf5uud6n5w0" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Swordsman/Swordsman with shadows/Swordsman-Idle.png" id="6_mw0nj"]
 [ext_resource type="Texture2D" uid="uid://bb0f428pbtpty" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Swordsman/Swordsman with shadows/Swordsman-Walk.png" id="7_oxshw"]
-[ext_resource type="Script" path="res://Scripts/Swordsman.gd" id="8_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_swordsman"]
-radius = 8.0
-height = 24.0
+[ext_resource type="Script" uid="uid://y8t5nphae0o8" path="res://Scripts/Swordsman.gd" id="8_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1141g"]
 atlas = ExtResource("1_njcxw")
@@ -450,6 +446,10 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_swordsman"]
+radius = 8.0
+height = 24.0
+
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=251871597]
 script = ExtResource("8_script")
 
@@ -459,7 +459,7 @@ position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_6xxxj")
 animation = &"idle"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1775859783]
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_swordsman")
 

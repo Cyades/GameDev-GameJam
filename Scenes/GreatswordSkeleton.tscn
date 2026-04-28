@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://biad3bp50sk0w"]
+[gd_scene load_steps=10 format=3 uid="uid://biad3bp50sk0w"]
 
 [ext_resource type="Texture2D" uid="uid://b4l42jm32dybr" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Greatsword Skeleton/Greatsword Skeleton with shadows/Greatsword Skeleton-Attack01.png" id="1_qchtv"]
 [ext_resource type="Texture2D" uid="uid://cigsqeqvjyo6a" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Greatsword Skeleton/Greatsword Skeleton with shadows/Greatsword Skeleton-Attack02.png" id="2_45o4o"]
@@ -7,6 +7,11 @@
 [ext_resource type="Texture2D" uid="uid://b4rsgddyfj73a" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Greatsword Skeleton/Greatsword Skeleton with shadows/Greatsword Skeleton-Hurt.png" id="5_f06cr"]
 [ext_resource type="Texture2D" uid="uid://d4bf2mk60wosx" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Greatsword Skeleton/Greatsword Skeleton with shadows/Greatsword Skeleton-Idle.png" id="6_of8wm"]
 [ext_resource type="Texture2D" uid="uid://b0wa6y7qhq5a" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Greatsword Skeleton/Greatsword Skeleton with shadows/Greatsword Skeleton-Walk.png" id="7_gsw5i"]
+[ext_resource type="Script" path="res://Scripts/GreatswordSkeleton.gd" id="8_script"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gsskel"]
+radius = 10.0
+height = 28.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_b5m0c"]
 atlas = ExtResource("1_qchtv")
@@ -411,11 +416,16 @@ animations = [{
 }]
 
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=1078399709]
+script = ExtResource("8_script")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1797783394]
 texture_filter = 1
+position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_j1akx")
-animation = &"walk"
-frame_progress = 0.71666074
+animation = &"idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("CapsuleShape2D_gsskel")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=602225045]

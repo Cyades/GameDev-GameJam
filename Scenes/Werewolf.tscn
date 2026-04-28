@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://bq3u66ytv3gfd"]
+[gd_scene load_steps=9 format=3 uid="uid://bq3u66ytv3gfd"]
 
 [ext_resource type="Texture2D" uid="uid://bx1o6lmom2mkn" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Werewolf/Werewolf with shadows/Werewolf-Attack01.png" id="1_udwpb"]
 [ext_resource type="Texture2D" uid="uid://k0fnsd8bsd54" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Werewolf/Werewolf with shadows/Werewolf-Attack02.png" id="2_pgu7j"]
@@ -6,6 +6,11 @@
 [ext_resource type="Texture2D" uid="uid://cu0du27lbs1y1" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Werewolf/Werewolf with shadows/Werewolf-Hurt.png" id="4_1x0ab"]
 [ext_resource type="Texture2D" uid="uid://b8m7dmsma7ltc" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Werewolf/Werewolf with shadows/Werewolf-Idle.png" id="5_268w4"]
 [ext_resource type="Texture2D" uid="uid://c5fx2p7rkagc" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Werewolf/Werewolf with shadows/Werewolf-Walk.png" id="6_ylul3"]
+[ext_resource type="Script" path="res://Scripts/Werewolf.gd" id="7_script"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_werewolf"]
+radius = 8.0
+height = 24.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1x0ab"]
 atlas = ExtResource("1_udwpb")
@@ -349,10 +354,16 @@ animations = [{
 }]
 
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=1806429882]
+script = ExtResource("7_script")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1036081313]
 texture_filter = 1
+position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_qb0c7")
-animation = &"walk"
+animation = &"idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("CapsuleShape2D_werewolf")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=878791839]

@@ -125,28 +125,22 @@ func _shoot_at_target() -> void:
 	# Play attack animation
 	_play_action(&"attack01")
 
-	# Snap direction to 8‑way
-	var dir := _snap_to_8way(to_target)
+	# Use direct normalized direction for accurate targeting
+	var dir := to_target.normalized()
+	if dir.length_squared() < 0.01:
+		dir = Vector2.RIGHT
 
 	# Spawn enemy arrow
 	if ENEMY_ARROW_SCENE == null:
 		return
 	var arrow = ENEMY_ARROW_SCENE.instantiate() as Area2D
+	arrow.direction = dir  # Set direction BEFORE adding to tree (rotation is set in _ready)
 	get_parent().add_child(arrow)
 	arrow.global_position = global_position + Vector2(0, 4) + dir * 10
-	arrow.rotation = dir.angle()
-	arrow.direction = dir
 	if arrow.get("speed") != null:
 		arrow.speed = arrow_speed
 	if arrow.get("damage") != null:
 		arrow.damage = arrow_damage
-
-func _snap_to_8way(dir: Vector2) -> Vector2:
-	if dir.length_squared() < 0.01:
-		return Vector2.RIGHT
-	var angle_rad: float = dir.angle()
-	var snapped_angle: float = round(angle_rad / (PI / 4.0)) * (PI / 4.0)
-	return Vector2.RIGHT.rotated(snapped_angle)
 
 # ─── Target finding ──────────────────────────────────────────────────────────
 

@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 @export var walk_speed: float = 150.0
 @export var sprint_speed_multiplier: float = 1.6
-@export var max_health: int = 15
+@export var max_health: int = 100000
 @export var melee_damage: int = 1
 @export var melee_interval: float = 0.65
 @export var melee_active_duration: float = 0.20
@@ -562,6 +562,27 @@ func _level_up() -> void:
 	print("LEVEL UP! Now level: ", current_level)
 	if level_label != null:
 		level_label.text = "Lv. " + str(current_level)
+	
+	# ── Stats scaling ──
+	# +2 max HP per level, heal to full
+	max_health += 2
+	health = max_health
+	_update_health_bar()
+	
+	# +1 melee damage every 2 levels
+	if current_level % 2 == 0:
+		melee_damage += 1
+	
+	# +5% walk speed per level (capped at 2x base)
+	walk_speed = minf(walk_speed * 1.05, 300.0)
+	
+	# Slightly faster attack interval (min 0.30s)
+	melee_interval = maxf(melee_interval * 0.95, 0.30)
+	if melee_cycle_timer != null:
+		melee_cycle_timer.wait_time = melee_interval
+	
+	# Increase magnet radius slightly
+	magnet_radius = minf(magnet_radius + 5.0, 250.0)
 
 func _update_exp_bar() -> void:
 	if exp_bar == null:
