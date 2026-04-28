@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://dujj5kj6221wf"]
+[gd_scene load_steps=12 format=3 uid="uid://dujj5kj6221wf"]
 
 [ext_resource type="Texture2D" uid="uid://bckde4eparwdg" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Knight Templar/Knight Templar with shadows/Knight Templar-Attack01.png" id="1_8dve4"]
 [ext_resource type="Texture2D" uid="uid://1ki0avcdjly7" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Knight Templar/Knight Templar with shadows/Knight Templar-Attack02.png" id="2_2dqrb"]
@@ -8,6 +8,11 @@
 [ext_resource type="Texture2D" uid="uid://b4bfokoltpvet" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Knight Templar/Knight Templar with shadows/Knight Templar-Hurt.png" id="6_b1w5o"]
 [ext_resource type="Texture2D" uid="uid://c6dn56h7sf04d" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Knight Templar/Knight Templar with shadows/Knight Templar-Idle.png" id="7_d0dp2"]
 [ext_resource type="Texture2D" uid="uid://bx7jb5itwogyd" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Knight Templar/Knight Templar with shadows/Knight Templar-Walk01.png" id="8_cuank"]
+[ext_resource type="Script" path="res://Scripts/KnightTemplar.gd" id="9_script"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ktemplar"]
+radius = 8.0
+height = 24.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5clm0"]
 atlas = ExtResource("1_8dve4")
@@ -417,11 +422,16 @@ animations = [{
 }]
 
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=1587713183]
+script = ExtResource("9_script")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1838631031]
 texture_filter = 1
+position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_8psnv")
-animation = &"walk"
-frame_progress = 0.05791052
+animation = &"idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("CapsuleShape2D_ktemplar")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1994120975]
