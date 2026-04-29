@@ -17,7 +17,7 @@ const LAYER_PLAYER_HURTBOX: int = 1 << 1
 const LAYER_PLAYER_HITBOX: int = 1 << 2
 const LAYER_ENEMY_HURTBOX: int = 1 << 3
 const LAYER_ENEMY_HITBOX: int = 1 << 4
-const EXP_GEM_SCENE: PackedScene = preload("res://Scenes/ExpGem.tscn")
+const ExpGemScript = preload("res://Scripts/ExpGem.gd")
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -102,8 +102,7 @@ func _play_action(a: StringName) -> void:
 	current_action_animation = a; velocity = Vector2.ZERO; _play_animation(a)
 func _on_animation_finished() -> void:
 	if animated_sprite.animation == &"death":
-		if EXP_GEM_SCENE:
-			var gem = EXP_GEM_SCENE.instantiate(); get_parent().add_child(gem); gem.global_position = global_position
+		ExpGemScript.drop_gems(self, 1, randi_range(1, 2))  # Medium tier, 1-2 gems
 		queue_free(); return
 	if animated_sprite.animation == current_action_animation: current_action_animation = &""
 func _is_action_locked() -> bool: return current_action_animation != &""

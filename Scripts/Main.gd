@@ -76,11 +76,15 @@ var timer_label: Label
 var kill_label: Label
 var boss_warning_label: Label
 
+# Gacha System
+var gacha_system: Node
+
 func _ready() -> void:
 	randomize()
 	player_camera = player.get_node_or_null("Camera2D") as Camera2D
 	_apply_wave(0)
 	_create_timer_hud()
+	_setup_gacha_system()
 	if not spawn_timer.timeout.is_connected(_on_enemy_spawn_timer_timeout):
 		spawn_timer.timeout.connect(_on_enemy_spawn_timer_timeout)
 	spawn_timer.start()
@@ -119,10 +123,6 @@ func _on_enemy_spawn_timer_timeout() -> void:
 	var wave_idx := clampi(current_wave, 0, wave_config.size() - 1)
 	var cfg: Dictionary = wave_config[wave_idx]
 	var pool: Array = cfg["pool"]
-	var max_enemies: int = cfg["max"]
-	
-	# Limit alive enemies
-	if enemy_container.get_child_count() >= max_enemies: return
 	
 	var scene: PackedScene = pool[randi() % pool.size()]
 	if scene == null: return
@@ -174,6 +174,20 @@ func _get_spawn_position_outside_camera() -> Vector2:
 func get_elapsed_time() -> float: return elapsed_time
 func get_kill_count() -> int: return kill_count
 func get_game_duration() -> float: return game_duration
+
+# ═══════════════════════════════════════════════════════════════════
+# GACHA SYSTEM
+# ═══════════════════════════════════════════════════════════════════
+const GachaSystemScript = preload("res://Scripts/GachaSystem.gd")
+
+func _setup_gacha_system() -> void:
+	gacha_system = Node.new()
+	gacha_system.name = "GachaSystem"
+	gacha_system.set_script(GachaSystemScript)
+	add_child(gacha_system)
+	# Set player reference so gacha can be triggered from Player._level_up()
+	if player and player.has_method("set_gacha_system"):
+		player.set_gacha_system(gacha_system)
 
 # ═══════════════════════════════════════════════════════════════════
 # TIMER HUD

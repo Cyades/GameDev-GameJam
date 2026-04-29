@@ -60,6 +60,12 @@ var exp_canvas_layer: CanvasLayer
 var exp_bar: ProgressBar
 var level_label: Label
 
+# Gacha system reference (set by Main.gd)
+var gacha_system: Node = null
+
+func set_gacha_system(system: Node) -> void:
+	gacha_system = system
+
 func _ready() -> void:
 	if not is_in_group("player"):
 		add_to_group("player")
@@ -583,6 +589,10 @@ func _level_up() -> void:
 	
 	# Increase magnet radius slightly
 	magnet_radius = minf(magnet_radius + 5.0, 250.0)
+	
+	# ── Gacha trigger every 5 levels ──
+	if gacha_system != null and gacha_system.has_method("check_gacha_trigger"):
+		gacha_system.check_gacha_trigger(self, current_level)
 
 func _update_exp_bar() -> void:
 	if exp_bar == null:

@@ -118,11 +118,14 @@ func _mk_area(n: String, layer: int, mask: int, grp: String, rad: float) -> Area
 	if c == null: c = CircleShape2D.new(); cs.shape = c
 	c.radius = max(rad, 1.0); return a
 
+const ExpGemScript = preload("res://Scripts/ExpGem.gd")
+
 func _play_action(a: StringName) -> void:
 	if not _has_animation(a): return
 	current_action_animation = a; velocity = Vector2.ZERO; _play_animation(a)
 func _on_animation_finished() -> void:
 	if animated_sprite.animation == &"death":
+		ExpGemScript.drop_gems(self, 3, 5)  # Boss tier, 5 gems
 		boss_defeated.emit()
 		queue_free(); return
 	if animated_sprite.animation == current_action_animation: current_action_animation = &""
