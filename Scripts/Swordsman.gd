@@ -4,7 +4,7 @@ extends CharacterBody2D
 ## attack03: Dash Attack — lunges forward toward enemy
 
 @export var move_speed: float = 140.0
-@export var follow_distance: float = 35.0
+@export var follow_distance: float = 60.0
 @export var max_health: int = 18
 @export var attack01_damage: int = 2
 @export var attack02_damage: int = 4
@@ -60,6 +60,16 @@ func _physics_process(delta: float) -> void:
 		leader = get_tree().get_first_node_in_group("player") as Node2D
 	if leader == null:
 		velocity = Vector2.ZERO; _play_animation(&"idle"); move_and_slide(); return
+	# Intercept: rush toward enemy near player
+	var threat := CombatUtils.find_enemy_near_player(global_position, get_tree(), 100.0)
+	if threat != null:
+		var to_threat := threat.global_position - global_position
+		if to_threat.length() > attack_range * 0.5:
+			var dir := to_threat.normalized()
+			velocity = dir * move_speed * 1.5
+			if dir.x != 0.0: animated_sprite.flip_h = dir.x < 0.0
+			_play_animation(&"walk")
+			move_and_slide(); return
 	var to_leader := leader.global_position - global_position
 	if to_leader.length() > follow_distance:
 		var dir := to_leader.normalized()

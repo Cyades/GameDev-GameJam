@@ -2,17 +2,15 @@ class_name CombatUtils
 ## Shared targeting utilities for enemies and companions
 
 ## ═══ ENEMY TARGETING: Find player or companion ═══
-## Prioritize player, but attack nearest companion if player is far
-static func find_priority_target(origin: Vector2, tree: SceneTree, prefer_player_weight: float = 0.6) -> Node2D:
-	# Get player
+## Prioritize player, but attack nearest companion if closer
+static func find_priority_target(origin: Vector2, tree: SceneTree, prefer_player_weight: float = 0.8) -> Node2D:
+	# Get the main player (Soldier — NOT in companion group)
 	var player: Node2D = null
 	var player_dist := INF
 	var first_player := tree.get_first_node_in_group("player") as Node2D
-	# Find the actual player (Soldier), not a companion
 	for p in tree.get_nodes_in_group("player"):
 		if not is_instance_valid(p) or not p is Node2D: continue
 		if p.get("is_dead") == true: continue
-		# The main player is NOT in companion group
 		if not p.is_in_group("companion"):
 			player = p as Node2D
 			player_dist = origin.distance_to(player.global_position)
@@ -29,12 +27,8 @@ static func find_priority_target(origin: Vector2, tree: SceneTree, prefer_player
 			comp_dist = d
 			nearest_comp = c as Node2D
 	
-	# Decision logic:
-	# Always prefer player if within 200px
-	if player and player_dist <= 200.0:
-		return player
-	
-	# If companion is significantly closer (60% weight), target companion
+	# Decision: target whoever is closest, but player gets a weight advantage
+	# Companion needs to be closer than (player_dist * weight) to be chosen
 	if nearest_comp and player:
 		if comp_dist < player_dist * prefer_player_weight:
 			return nearest_comp

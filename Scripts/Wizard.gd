@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 ## ── Companion Behaviour ──────────────────────────────────────────────────────
 @export var move_speed: float = 120.0
-@export var follow_distance: float = 45.0
+@export var follow_distance: float = 75.0
 @export var max_health: int = 15
 @export var attack01_damage: int = 3
 @export var attack02_damage: int = 5
@@ -65,6 +65,19 @@ func _physics_process(_delta: float) -> void:
 		if leader == null:
 			velocity = Vector2.ZERO
 			_play_animation(&"idle")
+			move_and_slide()
+			return
+
+	# Intercept: move closer to enemy near player
+	var threat := CombatUtils.find_enemy_near_player(global_position, get_tree(), 110.0)
+	if threat != null:
+		var to_threat := threat.global_position - global_position
+		if to_threat.length() > attack_range * 0.8:
+			var dir := to_threat.normalized()
+			velocity = dir * move_speed * 1.3
+			if dir.x != 0.0:
+				animated_sprite.flip_h = dir.x < 0.0
+			_play_animation(&"walk")
 			move_and_slide()
 			return
 

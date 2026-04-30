@@ -2,7 +2,7 @@ extends CharacterBody2D
 ## Armored Axeman — Heavy companion with knockback
 
 @export var move_speed: float = 85.0
-@export var follow_distance: float = 28.0
+@export var follow_distance: float = 50.0
 @export var max_health: int = 25
 @export var attack01_damage: int = 3
 @export var attack02_damage: int = 4
@@ -55,6 +55,18 @@ func _physics_process(_delta: float) -> void:
 		_play_animation(&"idle")
 		move_and_slide()
 		return
+	# Intercept: rush toward enemy near player
+	var threat := CombatUtils.find_enemy_near_player(global_position, get_tree(), 100.0)
+	if threat != null:
+		var to_threat := threat.global_position - global_position
+		if to_threat.length() > attack_range * 0.5:
+			var dir := to_threat.normalized()
+			velocity = dir * move_speed * 1.4
+			if dir.x != 0.0:
+				animated_sprite.flip_h = dir.x < 0.0
+			_play_animation(&"walk")
+			move_and_slide()
+			return
 	var to := leader.global_position - global_position
 	if to.length() > follow_distance:
 		var d := to.normalized()

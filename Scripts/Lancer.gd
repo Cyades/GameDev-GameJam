@@ -2,7 +2,7 @@ extends CharacterBody2D
 ## Lancer — Piercing companion, linear attacks that hit multiple enemies
 
 @export var move_speed: float = 130.0
-@export var follow_distance: float = 35.0
+@export var follow_distance: float = 60.0
 @export var max_health: int = 16
 @export var attack01_damage: int = 2
 @export var attack02_damage: int = 3
@@ -55,6 +55,18 @@ func _physics_process(_delta: float) -> void:
 		_play_animation(&"idle")
 		move_and_slide()
 		return
+	# Intercept: rush toward enemy near player
+	var threat := CombatUtils.find_enemy_near_player(global_position, get_tree(), 100.0)
+	if threat != null:
+		var to_threat := threat.global_position - global_position
+		if to_threat.length() > attack_range * 0.5:
+			var dir := to_threat.normalized()
+			velocity = dir * move_speed * 1.5
+			if dir.x != 0.0:
+				animated_sprite.flip_h = dir.x < 0.0
+			_play_animation(&"walk")
+			move_and_slide()
+			return
 	var to := leader.global_position - global_position
 	if to.length() > follow_distance:
 		var d := to.normalized()
@@ -99,13 +111,14 @@ func _find_enemies_in_line(target: Node2D, rng: float) -> Array[Node2D]:
 			continue
 		if e.get("is_dead") == true:
 			continue
-		var to_e := e.global_position - global_position
+		var enemy_node := e as Node2D
+		var to_e := enemy_node.global_position - global_position
 		if to_e.length() > rng:
 			continue
 		# Check if enemy is within ~30 degree cone in the attack direction
 		var dot := dir.dot(to_e.normalized())
 		if dot > 0.85:
-			result.append(e as Node2D)
+			result.append(enemy_node)
 	return result
 
 func _find_nearest(rng: float) -> Node2D:

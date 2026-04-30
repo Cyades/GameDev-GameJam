@@ -4,7 +4,7 @@ extends CharacterBody2D
 ## attack03: Heavy slam (high dmg), periodically blocks to reduce incoming damage
 
 @export var move_speed: float = 100.0
-@export var follow_distance: float = 30.0
+@export var follow_distance: float = 55.0
 @export var max_health: int = 30
 @export var attack01_damage: int = 2
 @export var attack02_damage: int = 3
@@ -44,6 +44,16 @@ func _physics_process(_delta: float) -> void:
 		leader = get_tree().get_first_node_in_group("player") as Node2D
 	if leader == null:
 		velocity = Vector2.ZERO; _play_animation(&"idle"); move_and_slide(); return
+	# Intercept: rush toward enemy near player
+	var threat := CombatUtils.find_enemy_near_player(global_position, get_tree(), 100.0)
+	if threat != null:
+		var to_threat := threat.global_position - global_position
+		if to_threat.length() > attack_range * 0.5:
+			var dir := to_threat.normalized()
+			velocity = dir * move_speed * 1.4
+			if dir.x != 0.0: animated_sprite.flip_h = dir.x < 0.0
+			_play_animation(&"walk")
+			move_and_slide(); return
 	var to := leader.global_position - global_position
 	if to.length() > follow_distance:
 		var d := to.normalized(); velocity = d * move_speed
