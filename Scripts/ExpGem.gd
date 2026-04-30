@@ -1,8 +1,8 @@
 extends Area2D
 ## ExpGem — Collectible experience gem with color variants
-## Colors: Green (1 exp), Yellow (3 exp), Red (5 exp), Purple (10 exp)
+## Colors: Green (5 exp), Yellow (15 exp), Red (30 exp), Purple (60 exp)
 
-@export var exp_amount: int = 1
+@export var exp_amount: int = 5
 @export var max_speed: float = 400.0
 @export var accel: float = 800.0
 
@@ -19,10 +19,10 @@ const GEM_PURPLE := preload("res://Assets GameJam/Ninja Adventure - Asset Pack/I
 enum GemTier { GREEN, YELLOW, RED, PURPLE }
 
 const GEM_DATA: Dictionary = {
-	GemTier.GREEN:  { "texture": null, "exp": 1 },   # null = loaded in _ready
-	GemTier.YELLOW: { "texture": null, "exp": 3 },
-	GemTier.RED:    { "texture": null, "exp": 5 },
-	GemTier.PURPLE: { "texture": null, "exp": 10 },
+	GemTier.GREEN:  { "texture": null, "exp": 5 },
+	GemTier.YELLOW: { "texture": null, "exp": 15 },
+	GemTier.RED:    { "texture": null, "exp": 30 },
+	GemTier.PURPLE: { "texture": null, "exp": 60 },
 }
 
 func _ready() -> void:
@@ -47,13 +47,13 @@ func collect() -> int:
 func set_tier(tier: int) -> void:
 	match tier:
 		GemTier.GREEN:
-			_set_texture(GEM_GREEN); exp_amount = 1
+			_set_texture(GEM_GREEN); exp_amount = 5
 		GemTier.YELLOW:
-			_set_texture(GEM_YELLOW); exp_amount = 3
+			_set_texture(GEM_YELLOW); exp_amount = 15
 		GemTier.RED:
-			_set_texture(GEM_RED); exp_amount = 5
+			_set_texture(GEM_RED); exp_amount = 30
 		GemTier.PURPLE:
-			_set_texture(GEM_PURPLE); exp_amount = 10
+			_set_texture(GEM_PURPLE); exp_amount = 60
 
 func _set_texture(tex: Texture2D) -> void:
 	var sprite := get_node_or_null("Sprite2D") as Sprite2D

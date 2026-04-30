@@ -145,19 +145,7 @@ func _shoot_at_target() -> void:
 # ─── Target finding ──────────────────────────────────────────────────────────
 
 func _find_nearest_target() -> Node2D:
-	var candidates := get_tree().get_nodes_in_group("player")
-	var nearest: Node2D = null
-	var nearest_dist := INF
-	for c in candidates:
-		if not is_instance_valid(c) or not c is Node2D:
-			continue
-		if c.get("is_dead") == true:
-			continue
-		var d := global_position.distance_to(c.global_position)
-		if d < nearest_dist:
-			nearest_dist = d
-			nearest = c as Node2D
-	return nearest
+	return CombatUtils.find_priority_target(global_position, get_tree())
 
 # ─── Combat areas ─────────────────────────────────────────────────────────────
 

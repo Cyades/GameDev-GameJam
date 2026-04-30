@@ -23,6 +23,7 @@ var action_timer: Timer
 var leader: Node2D
 var attack_toggle: bool = false  # alternate attack01 / attack02
 var attack_direction: Vector2 = Vector2.RIGHT
+var pending_arrow_spawn: bool = false  # spawn arrow at end of attack anim
 
 # ─── Ready ────────────────────────────────────────────────────────────────────
 
@@ -118,7 +119,7 @@ func _on_action_timer_timeout() -> void:
 
 func _do_attack(anim_name: StringName) -> void:
 	_play_action(anim_name)
-	_spawn_arrow()
+	pending_arrow_spawn = true  # Arrow fires at end of animation
 
 func _spawn_arrow() -> void:
 	if ARROW_SCENE == null:
@@ -140,20 +141,7 @@ func _spawn_arrow() -> void:
 # ─── Target finding ──────────────────────────────────────────────────────────
 
 func _find_nearest_enemy() -> Node2D:
-	var enemies := get_tree().get_nodes_in_group("enemy")
-	var nearest: Node2D = null
-	var nearest_dist_sq := attack_range * attack_range
-
-	for e in enemies:
-		if not is_instance_valid(e) or not e is Node2D:
-			continue
-		if e.get("is_dead") == true:
-			continue
-		var dist_sq := global_position.distance_squared_to(e.global_position)
-		if dist_sq < nearest_dist_sq:
-			nearest_dist_sq = dist_sq
-			nearest = e as Node2D
-	return nearest
+	return CombatUtils.find_enemy_near_player(global_position, get_tree(), attack_range)
 
 # ─── Damage receiving ────────────────────────────────────────────────────────
 
@@ -202,6 +190,10 @@ func _on_animation_finished() -> void:
 	if animated_sprite.animation == &"death":
 		animated_sprite.pause()
 		return
+	# Spawn arrow at end of attack animation
+	if pending_arrow_spawn and (animated_sprite.animation == &"attack01" or animated_sprite.animation == &"attack02"):
+		_spawn_arrow()
+		pending_arrow_spawn = false
 	if animated_sprite.animation == current_action_animation:
 		current_action_animation = &""
 

@@ -30,7 +30,7 @@ func _ready() -> void:
 	if not is_in_group("enemy"): add_to_group("enemy")
 	collision_layer = 0; collision_mask = 0; health = max_health
 	_setup_combat_areas()
-	target = get_tree().get_first_node_in_group("player") as Node2D
+	target = CombatUtils.find_priority_target(global_position, get_tree())
 	_configure_animation_loops()
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
@@ -42,8 +42,8 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if is_dead or _is_action_locked():
 		velocity = Vector2.ZERO; move_and_slide(); return
-	if target == null or not is_instance_valid(target):
-		target = get_tree().get_first_node_in_group("player") as Node2D
+	if target == null or not is_instance_valid(target) or target.get("is_dead") == true:
+		target = CombatUtils.find_priority_target(global_position, get_tree())
 		if target == null: velocity = Vector2.ZERO; _play_animation(&"idle"); move_and_slide(); return
 	var to := target.global_position - global_position
 	if to.length_squared() > 4.0:
@@ -55,7 +55,7 @@ func _physics_process(_delta: float) -> void:
 
 func _on_attack_timer() -> void:
 	if is_dead or _is_action_locked(): return
-	if target == null or not is_instance_valid(target): return
+	if target == null or not is_instance_valid(target) or target.get("is_dead") == true: return
 	if global_position.distance_to(target.global_position) > attack_range: return
 	if attack_cycle % 2 == 0:
 		_play_action(&"attack01"); _dmg_target(attack01_damage)

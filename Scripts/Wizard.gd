@@ -146,20 +146,7 @@ func _face_target(target: Node2D) -> void:
 		animated_sprite.flip_h = false
 
 func _find_nearest_enemy() -> Node2D:
-	var enemies := get_tree().get_nodes_in_group("enemy")
-	var nearest: Node2D = null
-	var nearest_dist_sq := attack_range * attack_range
-
-	for e in enemies:
-		if not is_instance_valid(e) or not e is Node2D:
-			continue
-		if e.get("is_dead") == true:
-			continue
-		var dist_sq := global_position.distance_squared_to(e.global_position)
-		if dist_sq < nearest_dist_sq:
-			nearest_dist_sq = dist_sq
-			nearest = e as Node2D
-	return nearest
+	return CombatUtils.find_enemy_near_player(global_position, get_tree(), attack_range)
 
 # ─── Damage receiving ────────────────────────────────────────────────────────
 

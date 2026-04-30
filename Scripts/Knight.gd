@@ -72,24 +72,16 @@ func _on_action_timer_timeout() -> void:
 	attack_cycle += 1
 
 func _find_nearest(rng: float) -> Node2D:
-	var enemies := get_tree().get_nodes_in_group("enemy")
-	var best: Node2D = null; var bd := rng * rng
-	for e in enemies:
-		if not is_instance_valid(e) or not e is Node2D: continue
-		if e.get("is_dead") == true: continue
-		var d := global_position.distance_squared_to(e.global_position)
-		if d < bd: bd = d; best = e as Node2D
-	return best
+	return CombatUtils.find_enemy_near_player(global_position, get_tree(), rng)
 
 func _find_all_in_range(rng: float) -> Array[Node2D]:
-	var result: Array[Node2D] = []
-	var rng_sq := rng * rng
-	for e in get_tree().get_nodes_in_group("enemy"):
-		if not is_instance_valid(e) or not e is Node2D: continue
-		if e.get("is_dead") == true: continue
-		if global_position.distance_squared_to(e.global_position) < rng_sq:
-			result.append(e as Node2D)
-	return result
+	# Find the player
+	var player_pos := global_position
+	for p in get_tree().get_nodes_in_group("player"):
+		if is_instance_valid(p) and p is Node2D and not p.is_in_group("companion"):
+			if p.get("is_dead") != true:
+				player_pos = (p as Node2D).global_position; break
+	return CombatUtils.find_all_enemies_near(player_pos, get_tree(), rng)
 
 func _dmg(e: Node2D, d: int) -> void:
 	if e.has_method("take_damage"): e.call("take_damage", d)

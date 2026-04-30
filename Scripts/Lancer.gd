@@ -109,18 +109,7 @@ func _find_enemies_in_line(target: Node2D, rng: float) -> Array[Node2D]:
 	return result
 
 func _find_nearest(rng: float) -> Node2D:
-	var best: Node2D = null
-	var bd := rng * rng
-	for e in get_tree().get_nodes_in_group("enemy"):
-		if not is_instance_valid(e) or not e is Node2D:
-			continue
-		if e.get("is_dead") == true:
-			continue
-		var d := global_position.distance_squared_to(e.global_position)
-		if d < bd:
-			bd = d
-			best = e as Node2D
-	return best
+	return CombatUtils.find_enemy_near_player(global_position, get_tree(), rng)
 
 func _dmg(e: Node2D, d: int) -> void:
 	if e.has_method("take_damage"):

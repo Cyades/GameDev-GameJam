@@ -117,29 +117,15 @@ func _apply_burn(enemy: Node2D) -> void:
 	bt.start()
 
 func _find_nearest(rng: float) -> Node2D:
-	var best: Node2D = null
-	var bd := rng * rng
-	for e in get_tree().get_nodes_in_group("enemy"):
-		if not is_instance_valid(e) or not e is Node2D:
-			continue
-		if e.get("is_dead") == true:
-			continue
-		var d := global_position.distance_squared_to(e.global_position)
-		if d < bd:
-			bd = d
-			best = e as Node2D
-	return best
+	return CombatUtils.find_enemy_near_player(global_position, get_tree(), rng)
 
 func _find_all_in_range(rng: float) -> Array[Node2D]:
-	var result: Array[Node2D] = []
-	for e in get_tree().get_nodes_in_group("enemy"):
-		if not is_instance_valid(e) or not e is Node2D:
-			continue
-		if e.get("is_dead") == true:
-			continue
-		if global_position.distance_squared_to(e.global_position) < rng * rng:
-			result.append(e as Node2D)
-	return result
+	var player_pos := global_position
+	for p in get_tree().get_nodes_in_group("player"):
+		if is_instance_valid(p) and p is Node2D and not p.is_in_group("companion"):
+			if p.get("is_dead") != true:
+				player_pos = (p as Node2D).global_position; break
+	return CombatUtils.find_all_enemies_near(player_pos, get_tree(), rng)
 
 func _dmg(e: Node2D, d: int) -> void:
 	if e.has_method("take_damage"):
