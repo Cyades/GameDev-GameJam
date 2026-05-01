@@ -90,28 +90,9 @@ func _ready() -> void:
 	_apply_wave(0)
 	_create_timer_hud()
 	_setup_gacha_system()
-	_debug_spawn_all_companions()  # ← REMOVE THIS LINE AFTER DEBUGGING
 	if not spawn_timer.timeout.is_connected(_on_enemy_spawn_timer_timeout):
 		spawn_timer.timeout.connect(_on_enemy_spawn_timer_timeout)
 	spawn_timer.start()
-
-## DEBUG: Spawn companions at start — REMOVE AFTER TESTING
-func _debug_spawn_all_companions() -> void:
-	var scenes: Array[String] = [
-		"res://Scenes/ArmoredAxeman.tscn",
-		"res://Scenes/ArmoredAxeman.tscn",
-		"res://Scenes/ArmoredAxeman.tscn",
-	]
-	var angle_step := TAU / scenes.size()
-	for i in scenes.size():
-		var scene := load(scenes[i]) as PackedScene
-		if scene == null: continue
-		var comp := scene.instantiate() as Node2D
-		if comp == null: continue
-		var offset := Vector2.RIGHT.rotated(angle_step * i) * 40.0
-		comp.global_position = player.global_position + offset
-		add_child(comp)
-		print("[DEBUG] Spawned: ", scenes[i])
 
 
 func _process(delta: float) -> void:
