@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://o2gttchpsar2"
+path="res://.godot/imported/Pull The Legend Gacha.mp3-df5bf7750b61ee53bc8953655bef0af5.mp3str"
+
+[deps]
+
+source_file="res://Assets GameJam/Music/Pull The Legend Gacha.mp3"
+dest_files=["res://.godot/imported/Pull The Legend Gacha.mp3-df5bf7750b61ee53bc8953655bef0af5.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

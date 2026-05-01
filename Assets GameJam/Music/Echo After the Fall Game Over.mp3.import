@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://v4266uynp65o"
+path="res://.godot/imported/Echo After the Fall Game Over.mp3-b4b45b91c30f0361f2498e56b23776e4.mp3str"
+
+[deps]
+
+source_file="res://Assets GameJam/Music/Echo After the Fall Game Over.mp3"
+dest_files=["res://.godot/imported/Echo After the Fall Game Over.mp3-b4b45b91c30f0361f2498e56b23776e4.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

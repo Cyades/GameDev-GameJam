@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c3x446cc224xx"
+path="res://.godot/imported/Huzzah at the Finish Line WIN.mp3-c5ba076bb3eb03674520a019c413ba96.mp3str"
+
+[deps]
+
+source_file="res://Assets GameJam/Music/Huzzah at the Finish Line WIN.mp3"
+dest_files=["res://.godot/imported/Huzzah at the Finish Line WIN.mp3-c5ba076bb3eb03674520a019c413ba96.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

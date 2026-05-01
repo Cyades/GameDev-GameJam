@@ -27,7 +27,8 @@ var gacha_canvas: CanvasLayer
 var dimmer: ColorRect          # Dark overlay
 var main_panel: PanelContainer
 var roll_button: Button
-var spin_label: Label          # Shows spinning names
+var slot_window: Control       # Window that clips the strip
+var slot_strip: HBoxContainer  # The moving strip of character boxes
 var result_name_label: Label
 var result_rarity_label: Label
 var result_info_label: Label
@@ -35,46 +36,16 @@ var close_button: Button
 
 # Spin state
 var is_spinning: bool = false
-var spin_speed: float = 0.0       # Names per second
-var spin_timer: float = 0.0
-var spin_index: int = 0
-var spin_decel: float = 0.0       # Deceleration rate
 var final_result: Dictionary = {}
 var spin_started: bool = false
 var result_shown: bool = false
+var sprite_cache: Dictionary = {}
 
 # ═══════════════════════════════════════════════════════════════════
 # PROCESS — runs during pause (process_mode = ALWAYS)
 # ═══════════════════════════════════════════════════════════════════
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-
-func _process(delta: float) -> void:
-	if not is_spinning: return
-	
-	spin_timer += delta
-	
-	# Calculate interval between name switches (slows down over time)
-	var interval := 1.0 / maxf(spin_speed, 0.5)
-	
-	if spin_timer >= interval:
-		spin_timer = 0.0
-		spin_index = (spin_index + 1) % COMPANION_POOL.size()
-		var current := COMPANION_POOL[spin_index]
-		if spin_label:
-			spin_label.text = current["name"]
-			spin_label.add_theme_color_override("font_color", current["color"])
-			
-		# Stop exactly when slow enough AND it lands on the pre-rolled target
-		if spin_speed <= 4.0 and current["name"] == final_result["name"]:
-			is_spinning = false
-			spin_speed = 0.0
-			_show_final_result()
-			return
-	
-	# Decelerate, but don't drop below the stopping threshold so it keeps spinning until it hits the target
-	if spin_speed > 4.0:
-		spin_speed -= spin_decel * delta
 
 # ═══════════════════════════════════════════════════════════════════
 # ROLL — weighted random
@@ -113,8 +84,10 @@ func _open_gacha_ui(player: Node2D) -> void:
 		_create_gacha_ui()
 	
 	# Reset UI state
-	spin_label.text = "???"
-	spin_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	slot_strip.position.x = 0
+	for child in slot_strip.get_children():
+		child.queue_free()
+		
 	result_name_label.text = ""
 	result_rarity_label.text = ""
 	result_info_label.text = ""
@@ -124,7 +97,7 @@ func _open_gacha_ui(player: Node2D) -> void:
 	main_panel.visible = true
 	dimmer.visible = true
 	
-	# Pre-determine the result (but animate the spin first)
+	# Pre-determine the result
 	final_result = _roll_companion()
 
 # ═══════════════════════════════════════════════════════════════════
@@ -139,28 +112,103 @@ func _on_roll_button_pressed() -> void:
 	result_rarity_label.text = ""
 	result_info_label.text = ""
 	
-	# Start spinning
 	is_spinning = true
 	spin_started = true
-	spin_speed = 20.0         # Start fast (20 names/sec)
-	spin_decel = 4.5          # Decelerate over ~4 seconds
-	spin_timer = 0.0
-	spin_index = randi() % COMPANION_POOL.size()
+	
+	_populate_slot_strip()
+	
+	# To ensure perfect alignment even before UI updates, we calculate the exact target position mathematically
+	var winning_index = 35
+	var box_width = 80.0
+	var separation = 10.0
+	
+	var box_center_x = (winning_index * (box_width + separation)) + (box_width / 2.0)
+	var center_of_window = 340.0 / 2.0 # slot_container width is 340
+	var target_x = center_of_window - box_center_x
+	
+	var tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_property(slot_strip, "position:x", target_x, 4.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.finished.connect(_show_final_result)
+
+func _populate_slot_strip() -> void:
+	var total_boxes = 40
+	var winning_index = 35
+	
+	for i in range(total_boxes):
+		var companion: Dictionary
+		if i == winning_index:
+			companion = final_result
+		else:
+			companion = _roll_companion()
+			
+		var box = Panel.new()
+		box.custom_minimum_size = Vector2(80, 90)
+		box.clip_contents = true
+		
+		var box_style = StyleBoxFlat.new()
+		var base_color = companion["color"] as Color
+		box_style.bg_color = base_color.lerp(Color(0.1, 0.1, 0.1), 0.7)
+		box_style.border_width_top = 2; box_style.border_width_bottom = 2
+		box_style.border_width_left = 2; box_style.border_width_right = 2
+		box_style.border_color = base_color
+		box_style.corner_radius_top_left = 6; box_style.corner_radius_top_right = 6
+		box_style.corner_radius_bottom_left = 6; box_style.corner_radius_bottom_right = 6
+		box.add_theme_stylebox_override("panel", box_style)
+		
+		var vbox = VBoxContainer.new()
+		vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		box.add_child(vbox)
+		
+		var sprite_space = Control.new()
+		sprite_space.custom_minimum_size = Vector2(70, 50)
+		vbox.add_child(sprite_space)
+		
+		var frames = _get_sprite_frames(companion["name"], companion["scene"])
+		if frames:
+			var sprite = AnimatedSprite2D.new()
+			sprite.sprite_frames = frames
+			sprite.animation = "idle"
+			sprite.play()
+			sprite.position = Vector2(35, 30)
+			sprite.scale = Vector2(1.5, 1.5)
+			sprite_space.add_child(sprite)
+			
+		var lbl = Label.new()
+		lbl.text = companion["name"]
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.add_theme_font_size_override("font_size", 10)
+		lbl.add_theme_color_override("font_color", Color(1, 1, 1))
+		lbl.text_overrun_behavior = 3 # OVERRUN_TRIM_ELLIPSIS
+		vbox.add_child(lbl)
+		
+		slot_strip.add_child(box)
+
+func _get_sprite_frames(comp_name: String, scene_path: String) -> SpriteFrames:
+	if sprite_cache.has(comp_name):
+		return sprite_cache[comp_name]
+		
+	var scene = load(scene_path) as PackedScene
+	if scene:
+		var instance = scene.instantiate()
+		var src_sprite = instance.get_node_or_null("AnimatedSprite2D")
+		if src_sprite:
+			var frames = src_sprite.sprite_frames
+			sprite_cache[comp_name] = frames
+			instance.free()
+			return frames
+		instance.free()
+	return null
 
 func _show_final_result() -> void:
 	if result_shown: return
 	result_shown = true
+	is_spinning = false
 	
-	# Show the pre-determined result
 	var name_text: String = final_result["name"]
 	var rarity: String = final_result["rarity"]
 	var color: Color = final_result["color"]
 	
-	# Update spin label to final result
-	spin_label.text = name_text
-	spin_label.add_theme_color_override("font_color", color)
-	
-	# Show result details
 	result_name_label.text = name_text
 	result_name_label.add_theme_color_override("font_color", color)
 	
@@ -169,10 +217,7 @@ func _show_final_result() -> void:
 	
 	result_info_label.text = "New companion joined your squad!"
 	
-	# Show close button
 	close_button.visible = true
-	
-	# Spawn the companion (while still paused)
 	_spawn_companion_from_result()
 	
 	print("[GACHA] Rolled: ", name_text, " (", rarity, ")")
@@ -201,9 +246,8 @@ func _spawn_companion_from_result() -> void:
 	var companion := scene.instantiate() as Node2D
 	if companion == null: return
 	
-	# Apply companion scaling based on player level
 	var player_lvl := pending_player.get("current_level") as int if pending_player.get("current_level") != null else 1
-	var level_multiplier := 1.0 + (player_lvl * 0.1) # +10% stats per player level
+	var level_multiplier := 1.0 + (player_lvl * 0.1)
 	
 	if companion.get("max_health") != null:
 		companion.set("max_health", int(companion.get("max_health") * level_multiplier))
@@ -229,7 +273,6 @@ func _on_close_button_pressed() -> void:
 	result_shown = false
 	spin_started = false
 	
-	# Unpause game
 	get_tree().paused = false
 
 # ═══════════════════════════════════════════════════════════════════
@@ -247,7 +290,7 @@ func _create_gacha_ui() -> void:
 	dimmer.name = "Dimmer"
 	dimmer.color = Color(0, 0, 0, 0.7)
 	dimmer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	dimmer.mouse_filter = Control.MOUSE_FILTER_STOP  # Block clicks behind
+	dimmer.mouse_filter = Control.MOUSE_FILTER_STOP
 	dimmer.visible = false
 	gacha_canvas.add_child(dimmer)
 	
@@ -255,8 +298,8 @@ func _create_gacha_ui() -> void:
 	main_panel = PanelContainer.new()
 	main_panel.name = "GachaMainPanel"
 	main_panel.set_anchors_preset(Control.PRESET_CENTER)
-	main_panel.position = Vector2(-180, -140)
-	main_panel.size = Vector2(360, 280)
+	main_panel.position = Vector2(-200, -180)
+	main_panel.size = Vector2(400, 360)
 	main_panel.visible = false
 	main_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	
@@ -275,7 +318,7 @@ func _create_gacha_ui() -> void:
 	# ── VBox layout ──
 	var vbox := VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", 6)
+	vbox.add_theme_constant_override("separation", 8)
 	main_panel.add_child(vbox)
 	
 	# ── Title ──
@@ -297,37 +340,68 @@ func _create_gacha_ui() -> void:
 	subtitle.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	vbox.add_child(subtitle)
 	
-	# ── Spacer ──
 	var spacer1 := Control.new()
 	spacer1.custom_minimum_size = Vector2(0, 4)
 	vbox.add_child(spacer1)
 	
-	# ── Spin display box ──
-	var spin_panel := PanelContainer.new()
-	spin_panel.custom_minimum_size = Vector2(280, 50)
-	var spin_style := StyleBoxFlat.new()
-	spin_style.bg_color = Color(0.03, 0.03, 0.08, 1.0)
-	spin_style.border_width_top = 2; spin_style.border_width_bottom = 2
-	spin_style.border_width_left = 2; spin_style.border_width_right = 2
-	spin_style.border_color = Color(0.5, 0.4, 0.1, 0.6)
-	spin_style.corner_radius_top_left = 6; spin_style.corner_radius_top_right = 6
-	spin_style.corner_radius_bottom_left = 6; spin_style.corner_radius_bottom_right = 6
-	spin_panel.add_theme_stylebox_override("panel", spin_style)
-	vbox.add_child(spin_panel)
+	# ── Slot Machine Window ──
+	var slot_container := Control.new()
+	slot_container.custom_minimum_size = Vector2(340, 100)
+	vbox.add_child(slot_container)
 	
-	spin_label = Label.new()
-	spin_label.name = "SpinLabel"
-	spin_label.text = "???"
-	spin_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	spin_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	spin_label.add_theme_font_size_override("font_size", 26)
-	spin_label.add_theme_color_override("font_color", Color(1, 1, 1))
-	spin_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-	spin_label.add_theme_constant_override("shadow_offset_x", 2)
-	spin_label.add_theme_constant_override("shadow_offset_y", 2)
-	spin_panel.add_child(spin_label)
+	var slot_bg := ColorRect.new()
+	slot_bg.color = Color(0.03, 0.03, 0.08, 1.0)
+	slot_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	slot_container.add_child(slot_bg)
 	
-	# ── Result labels (hidden until spin finishes) ──
+	slot_window = Control.new()
+	slot_window.name = "SlotWindow"
+	slot_window.set_anchors_preset(Control.PRESET_FULL_RECT)
+	slot_window.clip_contents = true
+	slot_container.add_child(slot_window)
+	
+	slot_strip = HBoxContainer.new()
+	slot_strip.name = "SlotStrip"
+	slot_strip.add_theme_constant_override("separation", 10)
+	slot_strip.position = Vector2(0, 5)
+	slot_window.add_child(slot_strip)
+	
+	# Center Overlay (Golden Frame)
+	var overlay_center = CenterContainer.new()
+	overlay_center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay_center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot_container.add_child(overlay_center)
+	
+	var center_frame := Panel.new()
+	center_frame.custom_minimum_size = Vector2(88, 98) # Slightly larger than the 80x90 character box
+	var frame_style := StyleBoxFlat.new()
+	frame_style.bg_color = Color(0, 0, 0, 0)
+	frame_style.border_width_top = 4; frame_style.border_width_bottom = 4
+	frame_style.border_width_left = 4; frame_style.border_width_right = 4
+	frame_style.border_color = Color(1.0, 0.85, 0.0, 0.9)
+	frame_style.corner_radius_top_left = 8; frame_style.corner_radius_top_right = 8
+	frame_style.corner_radius_bottom_left = 8; frame_style.corner_radius_bottom_right = 8
+	center_frame.add_theme_stylebox_override("panel", frame_style)
+	
+	center_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay_center.add_child(center_frame)
+	
+	# Highlight Glow for Center
+	var glow := Panel.new()
+	glow.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var glow_style := StyleBoxFlat.new()
+	glow_style.bg_color = Color(1.0, 1.0, 0.8, 0.1)
+	glow_style.corner_radius_top_left = 8; glow_style.corner_radius_top_right = 8
+	glow_style.corner_radius_bottom_left = 8; glow_style.corner_radius_bottom_right = 8
+	glow.add_theme_stylebox_override("panel", glow_style)
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center_frame.add_child(glow)
+	
+	var spacer2 := Control.new()
+	spacer2.custom_minimum_size = Vector2(0, 4)
+	vbox.add_child(spacer2)
+	
+	# ── Result labels ──
 	result_rarity_label = Label.new()
 	result_rarity_label.name = "RarityLabel"
 	result_rarity_label.text = ""
@@ -342,7 +416,7 @@ func _create_gacha_ui() -> void:
 	result_name_label.name = "ResultName"
 	result_name_label.text = ""
 	result_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	result_name_label.add_theme_font_size_override("font_size", 12)
+	result_name_label.add_theme_font_size_override("font_size", 14)
 	result_name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
 	vbox.add_child(result_name_label)
 	
@@ -354,10 +428,9 @@ func _create_gacha_ui() -> void:
 	result_info_label.add_theme_color_override("font_color", Color(0.6, 1.0, 0.6))
 	vbox.add_child(result_info_label)
 	
-	# ── Spacer ──
-	var spacer2 := Control.new()
-	spacer2.custom_minimum_size = Vector2(0, 4)
-	vbox.add_child(spacer2)
+	var spacer3 := Control.new()
+	spacer3.custom_minimum_size = Vector2(0, 4)
+	vbox.add_child(spacer3)
 	
 	# ── ROLL Button ──
 	roll_button = Button.new()
@@ -389,11 +462,9 @@ func _create_gacha_ui() -> void:
 	
 	roll_button.pressed.connect(_on_roll_button_pressed)
 	vbox.add_child(roll_button)
-	
-	# Center the button
 	roll_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	
-	# ── CLOSE Button (hidden until result shown) ──
+	# ── CLOSE Button ──
 	close_button = Button.new()
 	close_button.name = "CloseButton"
 	close_button.text = "✦ Continue ✦"
