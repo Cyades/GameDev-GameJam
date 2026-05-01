@@ -23,6 +23,8 @@ var action_timer: Timer
 var leader: Node2D
 var current_attack_target: Node2D = null
 var attack_cycle: int = 0
+var swing_damage: int = 0
+var swing_hit_enemies: Array = []
 
 func _ready() -> void:
 	if not is_in_group("companion"):
@@ -37,6 +39,8 @@ func _ready() -> void:
 	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
+	if not animated_sprite.frame_changed.is_connected(_on_frame_changed):
+		animated_sprite.frame_changed.connect(_on_frame_changed)
 	_play_animation(&"idle")
 	action_timer = Timer.new()
 	action_timer.wait_time = action_interval
@@ -103,16 +107,16 @@ func _on_action_timer_timeout() -> void:
 	_face(enemy)
 	match attack_cycle % 3:
 		0:  # Light chop — small knockback
+			swing_damage = attack01_damage; swing_hit_enemies.clear()
 			_play_action(&"attack01")
-			_dmg(enemy, attack01_damage)
 			_knockback(enemy, knockback_force * 0.5)
 		1:  # Cleave — medium knockback
+			swing_damage = attack02_damage; swing_hit_enemies.clear()
 			_play_action(&"attack02")
-			_dmg(enemy, attack02_damage)
 			_knockback(enemy, knockback_force)
 		2:  # Devastating slam — huge knockback
+			swing_damage = attack03_damage; swing_hit_enemies.clear()
 			_play_action(&"attack03")
-			_dmg(enemy, attack03_damage)
 			_knockback(enemy, knockback_force * 1.5)
 	attack_cycle += 1
 
@@ -173,6 +177,24 @@ func _on_animation_finished() -> void:
 		return
 	if animated_sprite.animation == current_action_animation:
 		current_action_animation = &""
+		swing_damage = 0; swing_hit_enemies.clear()
+
+func _on_frame_changed() -> void:
+	if swing_damage <= 0: return
+	var anim := animated_sprite.animation
+	var frame := animated_sprite.frame
+	# All attacks: damage from frame 4 onward
+	if anim == &"attack01" and frame < 4: return
+	if anim == &"attack02" and frame < 4: return
+	if anim == &"attack03" and frame < 4: return
+	if anim != &"attack01" and anim != &"attack02" and anim != &"attack03": return
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if not is_instance_valid(e) or not e is Node2D: continue
+		if e.get("is_dead") == true: continue
+		if e in swing_hit_enemies: continue
+		if global_position.distance_to((e as Node2D).global_position) < attack_range:
+			swing_hit_enemies.append(e)
+			_dmg(e as Node2D, swing_damage)
 
 func _is_action_locked() -> bool:
 	return current_action_animation != &""

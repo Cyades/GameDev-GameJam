@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://fchgcwik0hat"]
+[gd_scene format=3 uid="uid://fchgcwik0hat"]
 
 [ext_resource type="Texture2D" uid="uid://c2cl7mlvnpkic" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Armored Axeman/Armored Axeman with shadows/Armored Axeman-Attack01.png" id="1_lr0fo"]
 [ext_resource type="Texture2D" uid="uid://cxnh5og8ljw0y" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Armored Axeman/Armored Axeman with shadows/Armored Axeman-Attack02.png" id="2_f4tx8"]
@@ -7,11 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://lljmeblhnok1" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Armored Axeman/Armored Axeman with shadows/Armored Axeman-Hurt.png" id="5_178a8"]
 [ext_resource type="Texture2D" uid="uid://dkopjjjy3brft" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Armored Axeman/Armored Axeman with shadows/Armored Axeman-Idle.png" id="6_mtlpc"]
 [ext_resource type="Texture2D" uid="uid://0wh7abs0xqx2" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Armored Axeman/Armored Axeman with shadows/Armored Axeman-Walk.png" id="7_si6ea"]
-[ext_resource type="Script" path="res://Scripts/ArmoredAxeman.gd" id="8_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_axeman"]
-radius = 8.0
-height = 24.0
+[ext_resource type="Script" uid="uid://da4iyx6yr4e1h" path="res://Scripts/ArmoredAxeman.gd" id="8_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_m1q4g"]
 atlas = ExtResource("1_lr0fo")
@@ -253,7 +249,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack01",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -285,7 +281,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack02",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -326,7 +322,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack03",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -415,16 +411,21 @@ animations = [{
 "speed": 7.0
 }]
 
-[node name="CharacterBody2D" type="CharacterBody2D" unique_id=1627656016]
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_axeman"]
+radius = 8.0
+height = 24.0
+
+[node name="CharacterBody2D2" type="CharacterBody2D" unique_id=1627656016]
 script = ExtResource("8_script")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2144480466]
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_to16o")
-animation = &"idle"
+animation = &"attack01"
+frame_progress = 0.68099064
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1138964327]
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_axeman")
 
