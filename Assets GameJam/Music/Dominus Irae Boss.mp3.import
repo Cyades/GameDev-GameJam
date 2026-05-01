@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://d1j56dxv7j06m"
+path="res://.godot/imported/Dominus Irae Boss.mp3-5d7041d15944f90482e892a53dd5242a.mp3str"
+
+[deps]
+
+source_file="res://Assets GameJam/Music/Dominus Irae Boss.mp3"
+dest_files=["res://.godot/imported/Dominus Irae Boss.mp3-5d7041d15944f90482e892a53dd5242a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

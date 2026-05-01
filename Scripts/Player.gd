@@ -30,6 +30,7 @@ const ARROW_SCENE: PackedScene = preload("res://Scenes/Arrow.tscn")
 
 var facing_sign: float = 1.0
 var attack_direction: Vector2 = Vector2.RIGHT
+var mouse_aim_enabled: bool = false
 var current_action_animation: StringName = &""
 var is_dead: bool = false
 var health: int = 0
@@ -63,12 +64,23 @@ var level_label: Label
 # Gacha system reference (set by Main.gd)
 var gacha_system: Node = null
 
+var level_up_sounds: Array = [
+	preload("res://Assets GameJam/Ninja Adventure - Asset Pack/Audio/Jingles/LevelUp1.wav"),
+	preload("res://Assets GameJam/Ninja Adventure - Asset Pack/Audio/Jingles/LevelUp2.wav"),
+	preload("res://Assets GameJam/Ninja Adventure - Asset Pack/Audio/Jingles/LevelUp3.wav")
+]
+var level_up_audio_player: AudioStreamPlayer
+
 func set_gacha_system(system: Node) -> void:
 	gacha_system = system
 
 func _ready() -> void:
 	if not is_in_group("player"):
 		add_to_group("player")
+		
+	level_up_audio_player = AudioStreamPlayer.new()
+	level_up_audio_player.bus = "SFX"
+	add_child(level_up_audio_player)
 
 	health = max_health
 	_setup_health_bar()
@@ -83,9 +95,14 @@ func _ready() -> void:
 	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
+	if not animated_sprite.frame_changed.is_connected(_on_frame_changed):
+		animated_sprite.frame_changed.connect(_on_frame_changed)
 	_play_animation(&"idle")
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_E:
+		mouse_aim_enabled = not mouse_aim_enabled
+		
 	if event.is_action_pressed("die"):
 		_trigger_death()
 		return
@@ -107,14 +124,27 @@ func _physics_process(_delta: float) -> void:
 
 	var keep_attack_animation := melee_window_timer != null and melee_window_timer.time_left > 0.0
 	var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	
+	if mouse_aim_enabled:
+		var mouse_pos = get_global_mouse_position()
+		var dir_to_mouse = (mouse_pos - global_position).normalized()
+		if dir_to_mouse.length_squared() > 0.01:
+			attack_direction = dir_to_mouse
+			facing_sign = sign(attack_direction.x) if attack_direction.x != 0.0 else facing_sign
+			if not keep_attack_animation:
+				animated_sprite.flip_h = facing_sign < 0.0
+
 	if direction != Vector2.ZERO:
 		var is_sprinting := Input.is_action_pressed("sprint") and _has_animation(&"sprint")
 		var speed := walk_speed * (sprint_speed_multiplier if is_sprinting else 1.0)
 		velocity = direction * speed
 
-		attack_direction = _snap_to_8way(direction)
-		facing_sign = sign(attack_direction.x) if attack_direction.x != 0.0 else facing_sign
-		animated_sprite.flip_h = facing_sign < 0.0
+		if not mouse_aim_enabled:
+			attack_direction = _snap_to_8way(direction)
+			facing_sign = sign(attack_direction.x) if attack_direction.x != 0.0 else facing_sign
+			if not keep_attack_animation:
+				animated_sprite.flip_h = facing_sign < 0.0
+				
 		if not keep_attack_animation:
 			_play_animation(&"sprint" if is_sprinting else &"walk")
 	else:
@@ -295,6 +325,7 @@ func _start_melee_swing() -> void:
 		_spawn_arrow()
 	else:
 		melee_hitbox.monitoring = true
+		CombatSound.play_random_slash(self)
 		call_deferred("_apply_melee_damage")
 		
 	melee_window_timer.start(max(melee_active_duration, 0.8))
@@ -569,6 +600,10 @@ func _level_up() -> void:
 	print("LEVEL UP! Now level: ", current_level)
 	if level_label != null:
 		level_label.text = "Lv. " + str(current_level)
+		
+	if level_up_sounds.size() > 0:
+		level_up_audio_player.stream = level_up_sounds[randi() % level_up_sounds.size()]
+		level_up_audio_player.play()
 	
 	# ── Stats scaling ──
 	# +2 max HP per level, heal to full
@@ -642,9 +677,26 @@ func _trigger_death() -> void:
 func _on_animation_finished() -> void:
 	if animated_sprite.animation == &"death":
 		animated_sprite.pause()
+		var game_over = preload("res://Scenes/UI/GameOverMenu.tscn").instantiate()
+		get_tree().root.add_child(game_over)
+		get_tree().paused = true
 		return
 	if animated_sprite.animation == current_action_animation:
 		current_action_animation = &""
+
+func _on_frame_changed() -> void:
+	if animated_sprite.animation == &"attack03" and animated_sprite.frame == 7:
+		_shoot_arrow()
+
+func _shoot_arrow() -> void:
+	if ARROW_SCENE == null:
+		return
+	var arrow = ARROW_SCENE.instantiate()
+	arrow.global_position = global_position + attack_direction * 16.0
+	arrow.direction = attack_direction
+	arrow.rotation = attack_direction.angle()
+	arrow.damage = melee_damage
+	get_parent().add_child(arrow)
 
 func _is_action_locked() -> bool:
 	return current_action_animation != &""

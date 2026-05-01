@@ -8,10 +8,15 @@
 
 config_version=5
 
+[autoload]
+
+UISound="*res://Scripts/UISound.gd"
+CombatSound="*res://Scripts/CombatSound.gd"
+
 [application]
 
 config/name="GameDev-GameJam"
-run/main_scene="res://Scenes/Main.tscn"
+run/main_scene="res://Scenes/UI/MainMenu.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 

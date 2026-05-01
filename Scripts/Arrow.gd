@@ -15,6 +15,12 @@ func _ready() -> void:
 	timer.timeout.connect(queue_free)
 	add_child(timer)
 	
+	var launch_audio = AudioStreamPlayer2D.new()
+	launch_audio.stream = preload("res://Assets GameJam/Ninja Adventure - Asset Pack/Audio/Sounds/Whoosh & Slash/Launch.wav")
+	launch_audio.bus = "SFX"
+	add_child(launch_audio)
+	launch_audio.play()
+	
 	# Connect collision signal
 	if not area_entered.is_connected(_on_area_entered):
 		area_entered.connect(_on_area_entered)

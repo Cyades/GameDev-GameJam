@@ -169,6 +169,11 @@ func _on_frame_changed() -> void:
 	# Deal damage to nearby enemies during attack animations
 	if swing_damage <= 0: return
 	var anim := animated_sprite.animation
+	var frame := animated_sprite.frame
+	
+	if (anim == &"attack01" or anim == &"attack02" or anim == &"attack03") and frame == 0:
+		CombatSound.play_random_slash(self)
+		
 	if anim != &"attack01" and anim != &"attack02" and anim != &"attack03": return
 	for e in get_tree().get_nodes_in_group("enemy"):
 		if not is_instance_valid(e) or not e is Node2D: continue

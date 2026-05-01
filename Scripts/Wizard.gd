@@ -28,6 +28,8 @@ var leader: Node2D
 var attack_toggle: bool = false  # alternates between attack01 and attack02
 var pending_projectile_target: Node2D = null  # deferred projectile spawn
 var current_attack_target: Node2D = null  # for distributed targeting
+var fireball_audio_player: AudioStreamPlayer2D
+var strange_audio_player: AudioStreamPlayer2D
 
 # ─── Ready ────────────────────────────────────────────────────────────────────
 
@@ -36,6 +38,16 @@ func _ready() -> void:
 		add_to_group("companion")
 	if not is_in_group("player"):
 		add_to_group("player")
+
+	fireball_audio_player = AudioStreamPlayer2D.new()
+	fireball_audio_player.stream = preload("res://Assets GameJam/Ninja Adventure - Asset Pack/Audio/Sounds/Elemental/Fireball.wav")
+	fireball_audio_player.bus = "SFX"
+	add_child(fireball_audio_player)
+	
+	strange_audio_player = AudioStreamPlayer2D.new()
+	strange_audio_player.stream = preload("res://Assets GameJam/Ninja Adventure - Asset Pack/Audio/Sounds/Magic & Skill/Strange.wav")
+	strange_audio_player.bus = "SFX"
+	add_child(strange_audio_player)
 
 	health = max_health
 	leader = get_tree().get_first_node_in_group("player") as Node2D
@@ -132,6 +144,9 @@ func _on_action_timer_timeout() -> void:
 # ─── Attack 01 ────────────────────────────────────────────────────────────────
 
 func _do_attack01(enemy: Node2D) -> void:
+	if strange_audio_player:
+		strange_audio_player.play()
+		
 	_face_target(enemy)
 	_play_action(&"attack01")
 	_spawn_effect_on_target(enemy, &"attack01 effect")
@@ -142,6 +157,9 @@ func _do_attack01(enemy: Node2D) -> void:
 # ─── Attack 02 (PROJECTILE) ───────────────────────────────────────────────────
 
 func _do_attack02(enemy: Node2D) -> void:
+	if fireball_audio_player:
+		fireball_audio_player.play()
+		
 	_face_target(enemy)
 	_play_action(&"attack02")
 	pending_projectile_target = enemy  # Projectile fires on 2nd-to-last frame

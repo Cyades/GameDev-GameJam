@@ -28,6 +28,8 @@ var action_timer: Timer
 var leader: Node2D  # the player we follow
 var pending_attack_target: Node2D = null  # deferred attack effect
 var current_attack_target: Node2D = null  # for distributed targeting
+var heal_audio_player: AudioStreamPlayer2D
+var attack_audio_player: AudioStreamPlayer2D
 
 # ─── Ready ────────────────────────────────────────────────────────────────────
 
@@ -36,6 +38,16 @@ func _ready() -> void:
 		add_to_group("companion")
 	if not is_in_group("player"):
 		add_to_group("player")  # so heal can also target companions
+
+	heal_audio_player = AudioStreamPlayer2D.new()
+	heal_audio_player.stream = preload("res://Assets GameJam/Ninja Adventure - Asset Pack/Audio/Sounds/Magic & Skill/Fx.wav")
+	heal_audio_player.bus = "SFX"
+	add_child(heal_audio_player)
+	
+	attack_audio_player = AudioStreamPlayer2D.new()
+	attack_audio_player.stream = preload("res://Assets GameJam/Ninja Adventure - Asset Pack/Audio/Sounds/Magic & Skill/Magic1.wav")
+	attack_audio_player.bus = "SFX"
+	add_child(attack_audio_player)
 
 	health = max_health
 	leader = get_tree().get_first_node_in_group("player") as Node2D
@@ -133,6 +145,9 @@ func _on_action_timer_timeout() -> void:
 # ─── Attack ───────────────────────────────────────────────────────────────────
 
 func _do_attack(enemy: Node2D) -> void:
+	if attack_audio_player:
+		attack_audio_player.play()
+		
 	# Face the enemy
 	if enemy.global_position.x < global_position.x:
 		animated_sprite.flip_h = true
@@ -145,6 +160,9 @@ func _do_attack(enemy: Node2D) -> void:
 # ─── Heal ─────────────────────────────────────────────────────────────────────
 
 func _do_heal(target: Node2D) -> void:
+	if heal_audio_player:
+		heal_audio_player.play()
+		
 	# Face the target
 	if target.global_position.x < global_position.x:
 		animated_sprite.flip_h = true

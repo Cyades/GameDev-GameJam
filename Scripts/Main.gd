@@ -94,6 +94,11 @@ func _ready() -> void:
 	_apply_wave(0)
 	_create_timer_hud()
 	_setup_gacha_system()
+	
+	# Instantiate Pause Menu
+	var pause_menu = preload("res://Scenes/UI/PauseMenu.tscn").instantiate()
+	add_child(pause_menu)
+	
 	if not spawn_timer.timeout.is_connected(_on_enemy_spawn_timer_timeout):
 		spawn_timer.timeout.connect(_on_enemy_spawn_timer_timeout)
 	spawn_timer.start()

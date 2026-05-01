@@ -14,6 +14,12 @@ func _ready() -> void:
 	timer.autostart = true
 	timer.timeout.connect(queue_free)
 	add_child(timer)
+	
+	var launch_audio = AudioStreamPlayer2D.new()
+	launch_audio.stream = preload("res://Assets GameJam/Ninja Adventure - Asset Pack/Audio/Sounds/Whoosh & Slash/Launch.wav")
+	launch_audio.bus = "SFX"
+	add_child(launch_audio)
+	launch_audio.play()
 
 	# Set rotation to match direction for accurate visual
 	rotation = direction.angle()

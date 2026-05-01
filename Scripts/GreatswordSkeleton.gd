@@ -130,6 +130,10 @@ func _on_frame_changed() -> void:
 	var is_aoe := false
 	var do_knockback := false
 	
+	if anim == &"attack01" and f == 3: CombatSound.play_random_slash(self)
+	elif anim == &"attack02" and f == 3: CombatSound.play_random_slash(self)
+	elif anim == &"attack03" and f == 3: CombatSound.play_impact(self)
+	
 	if anim == &"attack01" and f >= 3: should_damage = true
 	elif anim == &"attack02" and f >= 3:
 		should_damage = true

@@ -211,7 +211,12 @@ func _on_frame_changed() -> void:
 	if swing_damage <= 0: return
 	var anim := animated_sprite.animation
 	var frame := animated_sprite.frame
+	
 	# attack01: frame 4+, attack02: frame 5+, attack03: frame 3+
+	if anim == &"attack01" and frame == 4: CombatSound.play_random_slash(self)
+	elif anim == &"attack02" and frame == 5: CombatSound.play_random_slash(self)
+	elif anim == &"attack03" and frame == 3: CombatSound.play_random_slash(self)
+	
 	if anim == &"attack01" and frame < 4: return
 	if anim == &"attack02" and frame < 5: return
 	if anim == &"attack03" and frame < 3: return

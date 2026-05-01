@@ -1,0 +1,120 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://Scripts/MainMenu.gd" id="1_script"]
+[ext_resource type="FontFile" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Font/NormalFont.ttf" id="2_font"]
+[ext_resource type="Texture2D" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_normal.png" id="3_btn"]
+[ext_resource type="Texture2D" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_hover.png" id="4_btn"]
+[ext_resource type="Texture2D" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_pressed.png" id="5_btn"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/SettingsMenu.tscn" id="6_settings"]
+
+[node name="MainMenu" type="CanvasLayer"]
+script = ExtResource("1_script")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.121569, 0.121569, 0.121569, 1)
+
+[node name="Title" type="Label" parent="Control"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 80.0
+offset_bottom = 130.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 48
+text = "GAME JAM SURVIVAL"
+horizontal_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -20.0
+offset_right = 100.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="PlayButton" type="TextureButton" parent="Control/VBoxContainer"]
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+texture_normal = ExtResource("3_btn")
+texture_pressed = ExtResource("5_btn")
+texture_hover = ExtResource("4_btn")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="Control/VBoxContainer/PlayButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_font")
+text = "PLAY"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SettingsButton" type="TextureButton" parent="Control/VBoxContainer"]
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+texture_normal = ExtResource("3_btn")
+texture_pressed = ExtResource("5_btn")
+texture_hover = ExtResource("4_btn")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="Control/VBoxContainer/SettingsButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_font")
+text = "SETTINGS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="QuitButton" type="TextureButton" parent="Control/VBoxContainer"]
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+texture_normal = ExtResource("3_btn")
+texture_pressed = ExtResource("5_btn")
+texture_hover = ExtResource("4_btn")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="Control/VBoxContainer/QuitButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_font")
+text = "QUIT"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SettingsMenu" parent="." instance=ExtResource("6_settings")]

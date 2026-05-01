@@ -118,6 +118,10 @@ func _on_frame_changed() -> void:
 	var should_damage := false
 	var is_aoe := false
 	
+	if anim == &"attack01" and f == 3: CombatSound.play_random_slash(self)
+	elif anim == &"attack02" and f == 3: CombatSound.play_random_slash(self)
+	elif anim == &"attack03" and f == 4: CombatSound.play_impact(self)
+	
 	if anim == &"attack01" and f >= 3: should_damage = true
 	elif anim == &"attack02" and f >= 3: should_damage = true
 	elif anim == &"attack03" and f >= 4:

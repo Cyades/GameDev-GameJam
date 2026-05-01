@@ -58,21 +58,23 @@ func _process(delta: float) -> void:
 	var interval := 1.0 / maxf(spin_speed, 0.5)
 	
 	if spin_timer >= interval:
-		spin_timer -= interval
+		spin_timer = 0.0
 		spin_index = (spin_index + 1) % COMPANION_POOL.size()
 		var current := COMPANION_POOL[spin_index]
 		if spin_label:
 			spin_label.text = current["name"]
 			spin_label.add_theme_color_override("font_color", current["color"])
+			
+		# Stop exactly when slow enough AND it lands on the pre-rolled target
+		if spin_speed <= 4.0 and current["name"] == final_result["name"]:
+			is_spinning = false
+			spin_speed = 0.0
+			_show_final_result()
+			return
 	
-	# Decelerate
-	spin_speed -= spin_decel * delta
-	
-	# Stop when slow enough
-	if spin_speed <= 0.5:
-		is_spinning = false
-		spin_speed = 0.0
-		_show_final_result()
+	# Decelerate, but don't drop below the stopping threshold so it keeps spinning until it hits the target
+	if spin_speed > 4.0:
+		spin_speed -= spin_decel * delta
 
 # ═══════════════════════════════════════════════════════════════════
 # ROLL — weighted random

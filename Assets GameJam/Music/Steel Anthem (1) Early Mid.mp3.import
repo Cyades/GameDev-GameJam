@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b1abtn4g0avr2"
+path="res://.godot/imported/Steel Anthem (1) Early Mid.mp3-6c15913de01d073583368f1ff9dcc0ed.mp3str"
+
+[deps]
+
+source_file="res://Assets GameJam/Music/Steel Anthem (1) Early Mid.mp3"
+dest_files=["res://.godot/imported/Steel Anthem (1) Early Mid.mp3-6c15913de01d073583368f1ff9dcc0ed.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

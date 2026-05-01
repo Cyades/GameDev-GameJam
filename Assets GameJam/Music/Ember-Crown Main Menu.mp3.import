@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://du656ydsdb8cm"
+path="res://.godot/imported/Ember-Crown Main Menu.mp3-742e9b8c56db596d32ddfa01fe8ab47b.mp3str"
+
+[deps]
+
+source_file="res://Assets GameJam/Music/Ember-Crown Main Menu.mp3"
+dest_files=["res://.godot/imported/Ember-Crown Main Menu.mp3-742e9b8c56db596d32ddfa01fe8ab47b.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

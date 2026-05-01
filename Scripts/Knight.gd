@@ -157,6 +157,11 @@ func _on_frame_changed() -> void:
 	var anim := animated_sprite.animation
 	var frame := animated_sprite.frame
 	# attack01: frames 3-5, attack02: frame 3+, attack03: frame 6+
+	
+	if anim == &"attack01" and frame == 3: CombatSound.play_random_slash(self)
+	elif anim == &"attack02" and frame == 3: CombatSound.play_random_slash(self)
+	elif anim == &"attack03" and frame == 6: CombatSound.play_fire(self)
+	
 	if anim == &"attack01" and (frame < 3 or frame > 5): return
 	if anim == &"attack02" and frame < 3: return
 	if anim == &"attack03" and frame < 6: return

@@ -138,6 +138,9 @@ func _on_frame_changed() -> void:
 	var f := animated_sprite.frame
 	var should_damage := false
 	
+	if anim == &"attack01" and f == 2: CombatSound.play_random_slash(self)
+	elif anim == &"attack02" and f == 2: CombatSound.play_random_slash(self)
+	
 	if anim == &"attack01" and f >= 2: should_damage = true
 	elif anim == &"attack02" and f >= 2: should_damage = true
 		

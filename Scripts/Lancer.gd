@@ -232,7 +232,12 @@ func _on_animation_finished() -> void:
 		animated_sprite.speed_scale = 1.5  # restore base speed
 
 func _on_frame_changed() -> void:
-	pass  # lunge handled in _physics_process for smooth movement
+	var anim := animated_sprite.animation
+	var frame := animated_sprite.frame
+	
+	if anim == &"attack01" and frame == 1: CombatSound.play_random_slash(self)
+	elif anim == &"attack02" and frame == 1: CombatSound.play_random_slash(self)
+	elif anim == &"attack03" and frame == 1: CombatSound.play_fire2(self)
 
 func _is_action_locked() -> bool:
 	return current_action_animation != &""
