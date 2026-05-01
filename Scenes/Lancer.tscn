@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://b6wagabpfy5dh"]
+[gd_scene format=3 uid="uid://b6wagabpfy5dh"]
 
 [ext_resource type="Texture2D" uid="uid://hd83gbmuducd" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Lancer/Lancer with shadows/Lancer-Attack01.png" id="1_8o2no"]
 [ext_resource type="Texture2D" uid="uid://dge54ywlpmv4s" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Lancer/Lancer with shadows/Lancer-Attack02.png" id="2_t06f5"]
@@ -7,11 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://ctre06dm7oppg" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Lancer/Lancer with shadows/Lancer-Hurt.png" id="5_2rfk0"]
 [ext_resource type="Texture2D" uid="uid://gdc2m2loxemm" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Lancer/Lancer with shadows/Lancer-Idle.png" id="6_o3oax"]
 [ext_resource type="Texture2D" uid="uid://c680fgre30f17" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Lancer/Lancer with shadows/Lancer-Walk01.png" id="7_dame2"]
-[ext_resource type="Script" path="res://Scripts/Lancer.gd" id="8_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_lancer"]
-radius = 8.0
-height = 24.0
+[ext_resource type="Script" uid="uid://e0k3wl5leqxb" path="res://Scripts/Lancer.gd" id="8_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_h2sio"]
 atlas = ExtResource("1_8o2no")
@@ -216,7 +212,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack01",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -248,7 +244,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack02",
-"speed": 5.0
+"speed": 8.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -277,7 +273,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack03",
-"speed": 5.0
+"speed": 8.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -363,8 +359,12 @@ animations = [{
 }],
 "loop": true,
 "name": &"walk",
-"speed": 5.0
+"speed": 8.0
 }]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_lancer"]
+radius = 8.0
+height = 24.0
 
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=1704023590]
 script = ExtResource("8_script")
@@ -373,9 +373,10 @@ script = ExtResource("8_script")
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_cq37x")
-animation = &"idle"
+animation = &"walk"
+frame_progress = 0.96430916
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1520203391]
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_lancer")
 

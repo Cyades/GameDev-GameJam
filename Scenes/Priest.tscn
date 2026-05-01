@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://bdygismfppdwj"]
+[gd_scene format=3 uid="uid://bdygismfppdwj"]
 
 [ext_resource type="Texture2D" uid="uid://byqvp4w3h7inp" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Priest/Priest with shadows/Priest-Attack.png" id="1_4q5fk"]
 [ext_resource type="Texture2D" uid="uid://dsh3niny66t38" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Priest/Priest with shadows/Priest-Death.png" id="2_q5jxy"]
@@ -8,11 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://b7i6p07ochxps" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Priest/Magic(projectile)/Priest-Heal_Effect.png" id="5_3so5g"]
 [ext_resource type="Texture2D" uid="uid://cl204y4b2ts22" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Priest/Priest with shadows/Priest-Idle.png" id="5_auxss"]
 [ext_resource type="Texture2D" uid="uid://d0ef3x7bbudsq" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Priest/Priest with shadows/Priest-Walk.png" id="6_l8sik"]
-[ext_resource type="Script" path="res://Scripts/Priest.gd" id="7_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_priest"]
-radius = 8.0
-height = 24.0
+[ext_resource type="Script" uid="uid://t1c6q6bs1j7e" path="res://Scripts/Priest.gd" id="7_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tpdv2"]
 atlas = ExtResource("1_4q5fk")
@@ -307,7 +303,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"heal effect",
-"speed": 5.0
+"speed": 6.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -376,8 +372,12 @@ animations = [{
 }],
 "loop": true,
 "name": &"walk",
-"speed": 5.0
+"speed": 8.0
 }]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_priest"]
+radius = 8.0
+height = 24.0
 
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=841541203]
 script = ExtResource("7_script")
@@ -386,9 +386,10 @@ script = ExtResource("7_script")
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_6012p")
-animation = &"idle"
+animation = &"walk"
+frame_progress = 0.8654543
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=303964249]
 texture_filter = 1
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_priest")

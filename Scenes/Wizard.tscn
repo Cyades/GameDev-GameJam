@@ -237,7 +237,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack01",
-"speed": 5.0
+"speed": 6.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -295,7 +295,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack02",
-"speed": 5.0
+"speed": 6.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -321,7 +321,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack02 effect",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -407,7 +407,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"walk",
-"speed": 5.0
+"speed": 8.0
 }]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wizard"]
@@ -421,8 +421,8 @@ script = ExtResource("7_script")
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_xd4ac")
-animation = &"attack01 effect"
-frame_progress = 0.93509924
+animation = &"walk"
+frame_progress = 0.9388517
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=294301360]
 texture_filter = 1

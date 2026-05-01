@@ -235,7 +235,6 @@ func _create_gacha_ui() -> void:
 	dimmer.name = "Dimmer"
 	dimmer.color = Color(0, 0, 0, 0.7)
 	dimmer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	dimmer.size = Vector2(1920, 1080)
 	dimmer.mouse_filter = Control.MOUSE_FILTER_STOP  # Block clicks behind
 	dimmer.visible = false
 	gacha_canvas.add_child(dimmer)

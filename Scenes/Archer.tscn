@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bft67xpqmav8f"]
+[gd_scene format=3 uid="uid://bft67xpqmav8f"]
 
 [ext_resource type="Texture2D" uid="uid://cjctrvlovvfxo" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Archer/Archer with shadows/Archer-Attack01.png" id="1_wm3jr"]
 [ext_resource type="Texture2D" uid="uid://bmwr6pgq1by55" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Archer/Archer with shadows/Archer-Attack02.png" id="2_ir7l1"]
@@ -6,11 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://c1bqk10pb8ag3" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Archer/Archer with shadows/Archer-Hurt.png" id="4_0y345"]
 [ext_resource type="Texture2D" uid="uid://dlf0gesued7fl" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Archer/Archer with shadows/Archer-Idle.png" id="5_peulk"]
 [ext_resource type="Texture2D" uid="uid://bgo5ii82tssb0" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Archer/Archer with shadows/Archer-Walk.png" id="6_uotf2"]
-[ext_resource type="Script" path="res://Scripts/Archer.gd" id="7_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_archer"]
-radius = 8.0
-height = 24.0
+[ext_resource type="Script" uid="uid://dqdh6q13he1jf" path="res://Scripts/Archer.gd" id="7_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wdvtb"]
 atlas = ExtResource("1_wm3jr")
@@ -216,7 +212,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack01",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -257,7 +253,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack02",
-"speed": 5.0
+"speed": 8.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -343,8 +339,12 @@ animations = [{
 }],
 "loop": true,
 "name": &"walk",
-"speed": 5.0
+"speed": 8.0
 }]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_archer"]
+radius = 8.0
+height = 24.0
 
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=787603323]
 script = ExtResource("7_script")
@@ -353,9 +353,10 @@ script = ExtResource("7_script")
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_q7xc2")
-animation = &"idle"
+animation = &"walk"
+frame_progress = 0.20168112
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=29312159]
 texture_filter = 1
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_archer")

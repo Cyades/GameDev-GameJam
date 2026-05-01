@@ -39,7 +39,7 @@ func _ready() -> void:
 	action_timer.timeout.connect(_on_action_timer_timeout)
 	add_child(action_timer); action_timer.start()
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	var separation := CombatUtils.get_separation_force(self, get_tree()) if not is_dead else Vector2.ZERO
 	if is_dead or _is_action_locked():
 		velocity = Vector2.ZERO; move_and_slide(); return
@@ -122,7 +122,8 @@ func take_damage(amount: int = 1) -> void:
 	if current_action_animation != &"block" and _has_animation(&"hurt"): _play_action(&"hurt")
 
 func receive_heal(a: int) -> void:
-	if is_dead: return; health = mini(health + a, max_health)
+	if is_dead: return
+	health = mini(health + a, max_health)
 func get_contact_damage() -> int: return 0
 
 func _trigger_death() -> void:

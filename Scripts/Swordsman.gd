@@ -29,6 +29,8 @@ var current_attack_target: Node2D = null
 var attack_cycle: int = 0
 var dash_target_pos: Vector2 = Vector2.ZERO
 var is_dashing: bool = false
+var swing_damage: int = 0  # damage per hit during current swing
+var swing_hit_enemies: Array = []  # enemies already hit this swing
 
 func _ready() -> void:
 	if not is_in_group("companion"): add_to_group("companion")
@@ -40,13 +42,15 @@ func _ready() -> void:
 	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
+	if not animated_sprite.frame_changed.is_connected(_on_frame_changed):
+		animated_sprite.frame_changed.connect(_on_frame_changed)
 	_play_animation(&"idle")
 	action_timer = Timer.new(); action_timer.name = "ActionTimer"
 	action_timer.wait_time = action_interval; action_timer.one_shot = false
 	action_timer.timeout.connect(_on_action_timer_timeout)
 	add_child(action_timer); action_timer.start()
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	var separation := CombatUtils.get_separation_force(self, get_tree()) if not is_dead else Vector2.ZERO
 	if is_dead:
 		velocity = Vector2.ZERO; move_and_slide(); return
@@ -100,18 +104,27 @@ func _on_action_timer_timeout() -> void:
 	match attack_cycle % 3:
 		0:  # Quick slash
 			if dist <= attack_range:
+				swing_damage = attack01_damage
+				swing_hit_enemies.clear()
 				_play_action(&"attack01")
 				_damage_enemy(enemy, attack01_damage)
+				swing_hit_enemies.append(enemy)
 		1:  # Heavy combo
 			if dist <= attack_range:
+				swing_damage = attack02_damage
+				swing_hit_enemies.clear()
 				_play_action(&"attack02")
 				_damage_enemy(enemy, attack02_damage)
+				swing_hit_enemies.append(enemy)
 		2:  # Dash attack — lunge toward enemy
 			if dist <= dash_range:
+				swing_damage = attack03_damage
+				swing_hit_enemies.clear()
 				_play_action(&"attack03")
 				dash_target_pos = enemy.global_position
 				is_dashing = true
 				_damage_enemy(enemy, attack03_damage)
+				swing_hit_enemies.append(enemy)
 	attack_cycle += 1
 
 func _damage_enemy(enemy: Node2D, dmg: int) -> void:
@@ -130,7 +143,8 @@ func take_damage(amount: int = 1) -> void:
 	if _has_animation(&"hurt"): _play_action(&"hurt")
 
 func receive_heal(amount: int) -> void:
-	if is_dead: return; health = mini(health + amount, max_health)
+	if is_dead: return
+	health = mini(health + amount, max_health)
 
 func get_contact_damage() -> int: return 0
 
@@ -148,6 +162,21 @@ func _on_animation_finished() -> void:
 	if animated_sprite.animation == &"death": animated_sprite.pause(); return
 	if animated_sprite.animation == current_action_animation:
 		current_action_animation = &""; is_dashing = false
+		swing_damage = 0
+		swing_hit_enemies.clear()
+
+func _on_frame_changed() -> void:
+	# Deal damage to nearby enemies during attack animations
+	if swing_damage <= 0: return
+	var anim := animated_sprite.animation
+	if anim != &"attack01" and anim != &"attack02" and anim != &"attack03": return
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if not is_instance_valid(e) or not e is Node2D: continue
+		if e.get("is_dead") == true: continue
+		if e in swing_hit_enemies: continue
+		if global_position.distance_to((e as Node2D).global_position) < attack_range:
+			swing_hit_enemies.append(e)
+			_damage_enemy(e as Node2D, swing_damage)
 
 func _is_action_locked() -> bool: return current_action_animation != &""
 
