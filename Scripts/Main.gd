@@ -11,6 +11,7 @@ const SKELETON_ARCHER:= preload("res://Scenes/SkeletonArcher.tscn")
 const ORC_RIDER      := preload("res://Scenes/OrcRider.tscn")
 const ARMORED_ORC    := preload("res://Scenes/ArmoredOrc.tscn")
 const ELITE_ORC      := preload("res://Scenes/EliteOrc.tscn")
+const ARMORED_SKELETON := preload("res://Scenes/ArmoredSkeleton.tscn")
 const WEREWOLF       := preload("res://Scenes/Werewolf.tscn")
 const BOSS1_SCENE    := preload("res://Scenes/GreatswordSkeleton.tscn")
 const BOSS2_SCENE    := preload("res://Scenes/Werebear.tscn")
@@ -29,13 +30,13 @@ var wave_config: Array = [
 	# Min 3-4: Ranged threat
 	{ "interval": 0.9, "pool": [SKELETON, ORC, SKELETON_ARCHER], "max": 16 },
 	# Min 4-5: Mixed horde
-	{ "interval": 0.85, "pool": [SKELETON, ORC, SKELETON_ARCHER, ORC], "max": 18 },
+	{ "interval": 0.85, "pool": [SKELETON, ORC, SKELETON_ARCHER, ORC, ARMORED_SKELETON], "max": 18 },
 	# Min 5-6: Orc Riders appear
-	{ "interval": 0.8, "pool": [ORC, SKELETON_ARCHER, ORC_RIDER], "max": 20 },
+	{ "interval": 0.8, "pool": [ORC, SKELETON_ARCHER, ORC_RIDER, ARMORED_SKELETON], "max": 20 },
 	# Min 6-7: Armored Orcs
-	{ "interval": 0.75, "pool": [ORC, ORC_RIDER, ARMORED_ORC, SKELETON_ARCHER], "max": 22 },
+	{ "interval": 0.75, "pool": [ORC, ORC_RIDER, ARMORED_ORC, SKELETON_ARCHER, ARMORED_SKELETON], "max": 22 },
 	# Min 7-8: Pre-boss — intense  (BOSS at end of min 8)
-	{ "interval": 0.7, "pool": [ORC_RIDER, ARMORED_ORC, SKELETON_ARCHER, ELITE_ORC], "max": 24 },
+	{ "interval": 0.7, "pool": [ORC_RIDER, ARMORED_ORC, SKELETON_ARCHER, ELITE_ORC, ARMORED_SKELETON], "max": 24 },
 	# Min 8-9: BOSS 1 spawned, lighter horde
 	{ "interval": 1.0, "pool": [SKELETON, ORC, SKELETON_ARCHER], "max": 15 },
 	# Min 9-10: Post-boss recovery

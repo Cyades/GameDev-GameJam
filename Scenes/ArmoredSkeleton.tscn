@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://fmupgunkftu4"]
 
+[ext_resource type="Script" path="res://Scripts/ArmoredSkeleton.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://bdnjr3ouiq7yt" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Armored Skeleton/Armored Skeleton with shadows/Armored Skeleton-Attack01.png" id="1_begr7"]
 [ext_resource type="Texture2D" uid="uid://mimkgi4oho2e" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Armored Skeleton/Armored Skeleton with shadows/Armored Skeleton-Attack02.png" id="2_oyxm6"]
 [ext_resource type="Texture2D" uid="uid://cj117s5c3yrr7" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Armored Skeleton/Armored Skeleton with shadows/Armored Skeleton-Death.png" id="3_h6m7y"]
@@ -313,7 +314,7 @@ animations = [{
 "speed": 7.0
 }]
 
-[node name="CharacterBody2D" type="CharacterBody2D" unique_id=754814100]
+[node name="CharacterBody2D" type="CharacterBody2D" unique_id=754814100 script=ExtResource("1_script")]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=986518255]
 texture_filter = 1
