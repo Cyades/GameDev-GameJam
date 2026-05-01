@@ -19,11 +19,11 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS # Always process so tween works during pause
 	
 	player1 = AudioStreamPlayer.new()
-	player1.bus = "Music" # Assumes you have a "Music" audio bus, if not it routes to Master
+	player1.bus = "BGM" # Assumes you have a "Music" audio bus, if not it routes to Master
 	add_child(player1)
 	
 	player2 = AudioStreamPlayer.new()
-	player2.bus = "Music"
+	player2.bus = "BGM"
 	add_child(player2)
 	
 	active_player = player1
@@ -72,6 +72,14 @@ func _on_track_finished(player: AudioStreamPlayer) -> void:
 	else:
 		# For other tracks, just loop them
 		player.play()
+
+func pause_music() -> void:
+	if player1.playing: player1.stream_paused = true
+	if player2.playing: player2.stream_paused = true
+
+func unpause_music() -> void:
+	if player1.stream_paused: player1.stream_paused = false
+	if player2.stream_paused: player2.stream_paused = false
 
 # Helper methods for states
 func play_menu_music() -> void:

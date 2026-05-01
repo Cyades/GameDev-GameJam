@@ -22,10 +22,12 @@ func _input(event: InputEvent) -> void:
 
 func _pause() -> void:
 	get_tree().paused = true
+	MusicManager.pause_music()
 	show()
 
 func _unpause() -> void:
 	get_tree().paused = false
+	MusicManager.unpause_music()
 	hide()
 
 func _on_resume_pressed() -> void:
