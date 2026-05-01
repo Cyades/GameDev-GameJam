@@ -25,6 +25,7 @@ var target: Node2D; var current_action_animation: StringName = &""
 var is_dead: bool = false; var health: int = 0
 var hurtbox: Area2D; var contact_hitbox: Area2D; var attack_timer: Timer
 var attack_cycle: int = 0
+var swing_damage: int = 0; var swing_hit_targets: Array = []
 
 func _ready() -> void:
 	if not is_in_group("enemy"): add_to_group("enemy")
@@ -35,6 +36,8 @@ func _ready() -> void:
 	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
+	if not animated_sprite.frame_changed.is_connected(_on_frame_changed):
+		animated_sprite.frame_changed.connect(_on_frame_changed)
 	_play_animation(&"idle")
 	attack_timer = Timer.new(); attack_timer.wait_time = attack_interval
 	attack_timer.one_shot = false; attack_timer.timeout.connect(_on_attack_timer)
@@ -58,15 +61,12 @@ func _on_attack_timer() -> void:
 	if is_dead or _is_action_locked(): return
 	if target == null or not is_instance_valid(target) or target.get("is_dead") == true: return
 	if global_position.distance_to(target.global_position) > attack_range: return
+	swing_hit_targets.clear()
 	if attack_cycle % 2 == 0:
-		_play_action(&"attack01"); _dmg_target(attack01_damage)
+		_play_action(&"attack01"); swing_damage = attack01_damage
 	else:
-		_play_action(&"attack02"); _dmg_target(attack02_damage)
+		_play_action(&"attack02"); swing_damage = attack02_damage
 	attack_cycle += 1
-
-func _dmg_target(d: int) -> void:
-	if target and is_instance_valid(target) and target.has_method("take_damage"):
-		target.call("take_damage", d)
 
 func take_damage(amount: int = 1) -> void:
 	if is_dead: return
@@ -106,7 +106,25 @@ func _on_animation_finished() -> void:
 	if animated_sprite.animation == &"death":
 		ExpGemScript.drop_gems(self, 1, randi_range(1, 2))  # Medium tier, 1-2 gems
 		queue_free(); return
-	if animated_sprite.animation == current_action_animation: current_action_animation = &""
+	if animated_sprite.animation == current_action_animation:
+		current_action_animation = &""
+		swing_damage = 0
+		swing_hit_targets.clear()
+
+func _on_frame_changed() -> void:
+	if swing_damage <= 0: return
+	var anim := animated_sprite.animation
+	var f := animated_sprite.frame
+	var should_damage := false
+	
+	if anim == &"attack01" and f >= 2: should_damage = true
+	elif anim == &"attack02" and f >= 2: should_damage = true
+		
+	if should_damage:
+		if target != null and is_instance_valid(target) and target.get("is_dead") != true and target not in swing_hit_targets:
+			if global_position.distance_to(target.global_position) <= attack_range:
+				if target.has_method("take_damage"): target.call("take_damage", swing_damage)
+				swing_hit_targets.append(target)
 func _is_action_locked() -> bool: return current_action_animation != &""
 func _play_animation(a: StringName) -> void:
 	if not _has_animation(a): return

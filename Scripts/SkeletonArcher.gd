@@ -31,6 +31,8 @@ var health: int = 0
 var hurtbox: Area2D
 var contact_hitbox: Area2D
 var shoot_timer: Timer
+var has_shot_arrow: bool = false
+var shoot_dir: Vector2 = Vector2.RIGHT
 
 # ─── Ready ────────────────────────────────────────────────────────────────────
 
@@ -50,6 +52,8 @@ func _ready() -> void:
 	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
+	if not animated_sprite.frame_changed.is_connected(_on_frame_changed):
+		animated_sprite.frame_changed.connect(_on_frame_changed)
 	_play_animation(&"idle")
 
 	# Shoot timer
@@ -123,25 +127,28 @@ func _shoot_at_target() -> void:
 	if to_target.x != 0.0:
 		animated_sprite.flip_h = to_target.x < 0.0
 
+	# Use direct normalized direction for accurate targeting
+	shoot_dir = to_target.normalized()
+	if shoot_dir.length_squared() < 0.01:
+		shoot_dir = Vector2.RIGHT
+		
+	has_shot_arrow = false
+
 	# Play attack animation
 	_play_action(&"attack01")
 
-	# Use direct normalized direction for accurate targeting
-	var dir := to_target.normalized()
-	if dir.length_squared() < 0.01:
-		dir = Vector2.RIGHT
-
-	# Spawn enemy arrow
-	if ENEMY_ARROW_SCENE == null:
-		return
-	var arrow = ENEMY_ARROW_SCENE.instantiate() as Area2D
-	arrow.direction = dir  # Set direction BEFORE adding to tree (rotation is set in _ready)
-	get_parent().add_child(arrow)
-	arrow.global_position = global_position + Vector2(0, 4) + dir * 10
-	if arrow.get("speed") != null:
-		arrow.speed = arrow_speed
-	if arrow.get("damage") != null:
-		arrow.damage = arrow_damage
+func _on_frame_changed() -> void:
+	if animated_sprite.animation == &"attack01" and animated_sprite.frame == 7 and not has_shot_arrow:
+		has_shot_arrow = true
+		if ENEMY_ARROW_SCENE == null: return
+		var arrow = ENEMY_ARROW_SCENE.instantiate() as Area2D
+		arrow.direction = shoot_dir
+		get_parent().add_child(arrow)
+		arrow.global_position = global_position + Vector2(0, 4) + shoot_dir * 10
+		if arrow.get("speed") != null:
+			arrow.speed = arrow_speed
+		if arrow.get("damage") != null:
+			arrow.damage = arrow_damage
 
 # ─── Target finding ──────────────────────────────────────────────────────────
 

@@ -29,6 +29,7 @@ var is_dead: bool = false; var health: int = 0
 var hurtbox: Area2D; var contact_hitbox: Area2D
 var attack_timer: Timer; var attack_cycle: int = 0
 var is_enraged: bool = false
+var swing_damage: int = 0; var swing_hit_targets: Array = []
 
 signal boss_defeated
 
@@ -44,6 +45,8 @@ func _ready() -> void:
 	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
+	if not animated_sprite.frame_changed.is_connected(_on_frame_changed):
+		animated_sprite.frame_changed.connect(_on_frame_changed)
 	_play_animation(&"idle")
 	attack_timer = Timer.new(); attack_timer.wait_time = attack_interval
 	attack_timer.one_shot = false; attack_timer.timeout.connect(_on_attack_timer)
@@ -73,39 +76,20 @@ func _on_attack_timer() -> void:
 	if target == null or not is_instance_valid(target) or target.get("is_dead") == true: return
 	if global_position.distance_to(target.global_position) > attack_range: return
 	var bonus := 3 if is_enraged else 0
+	swing_hit_targets.clear()
 	match attack_cycle % 3:
-		0: _play_action(&"attack01"); _dmg_target(attack01_damage + bonus)
-		1: _play_action(&"attack02"); _aoe_damage(attack02_damage + bonus, aoe_radius, false)
-		2: _play_action(&"attack03"); _aoe_damage(attack03_damage + bonus, aoe_radius, true); _apply_dot_to_player()
+		0: _play_action(&"attack01"); swing_damage = attack01_damage + bonus
+		1: _play_action(&"attack02"); swing_damage = attack02_damage + bonus
+		2: _play_action(&"attack03"); swing_damage = attack03_damage + bonus
 	attack_cycle += 1
 
-func _dmg_target(d: int) -> void:
-	if target and is_instance_valid(target) and target.has_method("take_damage"):
-		target.call("take_damage", d)
-
-func _aoe_damage(dmg: int, radius: float, do_knockback: bool) -> void:
-	var targets: Array[Node] = []
-	targets.append_array(get_tree().get_nodes_in_group("player"))
-	for t in targets:
-		if not is_instance_valid(t) or not t is Node2D: continue
-		if global_position.distance_to((t as Node2D).global_position) > radius: continue
-		if t.has_method("take_damage"): t.call("take_damage", dmg)
-		if do_knockback and t is CharacterBody2D:
-			var kb := ((t as Node2D).global_position - global_position).normalized()
-			(t as CharacterBody2D).velocity = kb * knockback_strength
-
-func _apply_dot_to_player() -> void:
-	var targets: Array[Node] = []
-	targets.append_array(get_tree().get_nodes_in_group("player"))
-	for t in targets:
-		if not is_instance_valid(t) or not t is Node2D: continue
-		if global_position.distance_to((t as Node2D).global_position) > aoe_radius: continue
-		if t.has_method("take_damage"):
-			for i in dot_ticks:
-				get_tree().create_timer(0.5 * (i + 1)).timeout.connect(func():
-					if is_instance_valid(t) and t.has_method("take_damage"):
-						t.call("take_damage", dot_damage)
-				)
+func _apply_dot(t: Node2D) -> void:
+	if t.has_method("take_damage"):
+		for i in dot_ticks:
+			get_tree().create_timer(0.5 * (i + 1)).timeout.connect(func():
+				if is_instance_valid(t) and t.has_method("take_damage"):
+					t.call("take_damage", dot_damage)
+			)
 
 func take_damage(amount: int = 1) -> void:
 	if is_dead: return
@@ -147,7 +131,48 @@ func _on_animation_finished() -> void:
 		ExpGemScript.drop_gems(self, 3, 8)  # Boss tier, 8 gems
 		boss_defeated.emit()
 		queue_free(); return
-	if animated_sprite.animation == current_action_animation: current_action_animation = &""
+	if animated_sprite.animation == current_action_animation:
+		current_action_animation = &""
+		swing_damage = 0
+		swing_hit_targets.clear()
+
+func _on_frame_changed() -> void:
+	if swing_damage <= 0: return
+	var anim := animated_sprite.animation
+	var f := animated_sprite.frame
+	var should_damage := false
+	var is_aoe := false
+	var do_knockback := false
+	var do_dot := false
+	
+	if anim == &"attack01" and f >= 4: should_damage = true
+	elif anim == &"attack02" and f >= 3:
+		should_damage = true
+		is_aoe = true
+	elif anim == &"attack03" and f >= 4:
+		should_damage = true
+		is_aoe = true
+		do_knockback = true
+		do_dot = true
+		
+	if should_damage:
+		if is_aoe:
+			for e in get_tree().get_nodes_in_group("player"):
+				if not is_instance_valid(e) or not e is Node2D: continue
+				if e.get("is_dead") == true: continue
+				if e in swing_hit_targets: continue
+				if global_position.distance_to((e as Node2D).global_position) <= aoe_radius:
+					if e.has_method("take_damage"): e.call("take_damage", swing_damage)
+					if do_knockback and e is CharacterBody2D:
+						var kb_dir := ((e as Node2D).global_position - global_position).normalized()
+						(e as CharacterBody2D).velocity += kb_dir * knockback_strength
+					if do_dot: _apply_dot(e as Node2D)
+					swing_hit_targets.append(e)
+		else:
+			if target != null and is_instance_valid(target) and target.get("is_dead") != true and target not in swing_hit_targets:
+				if global_position.distance_to(target.global_position) <= attack_range:
+					if target.has_method("take_damage"): target.call("take_damage", swing_damage)
+					swing_hit_targets.append(target)
 func _is_action_locked() -> bool: return current_action_animation != &""
 func _play_animation(a: StringName) -> void:
 	if not _has_animation(a): return

@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://biad3bp50sk0w"]
+[gd_scene format=3 uid="uid://biad3bp50sk0w"]
 
 [ext_resource type="Texture2D" uid="uid://b4l42jm32dybr" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Greatsword Skeleton/Greatsword Skeleton with shadows/Greatsword Skeleton-Attack01.png" id="1_qchtv"]
 [ext_resource type="Texture2D" uid="uid://cigsqeqvjyo6a" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Greatsword Skeleton/Greatsword Skeleton with shadows/Greatsword Skeleton-Attack02.png" id="2_45o4o"]
@@ -7,11 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://b4rsgddyfj73a" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Greatsword Skeleton/Greatsword Skeleton with shadows/Greatsword Skeleton-Hurt.png" id="5_f06cr"]
 [ext_resource type="Texture2D" uid="uid://d4bf2mk60wosx" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Greatsword Skeleton/Greatsword Skeleton with shadows/Greatsword Skeleton-Idle.png" id="6_of8wm"]
 [ext_resource type="Texture2D" uid="uid://b0wa6y7qhq5a" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Greatsword Skeleton/Greatsword Skeleton with shadows/Greatsword Skeleton-Walk.png" id="7_gsw5i"]
-[ext_resource type="Script" path="res://Scripts/GreatswordSkeleton.gd" id="8_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gsskel"]
-radius = 10.0
-height = 28.0
+[ext_resource type="Script" uid="uid://db2igou8lu2s7" path="res://Scripts/GreatswordSkeleton.gd" id="8_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_b5m0c"]
 atlas = ExtResource("1_qchtv")
@@ -253,7 +249,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack01",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -294,7 +290,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack02",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -323,7 +319,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack03",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -415,16 +411,20 @@ animations = [{
 "speed": 7.0
 }]
 
-[node name="CharacterBody2D" type="CharacterBody2D" unique_id=1078399709]
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gsskel"]
+height = 28.0
+
+[node name="CharacterBody2D2" type="CharacterBody2D" unique_id=1078399709]
 script = ExtResource("8_script")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1797783394]
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_j1akx")
-animation = &"idle"
+animation = &"attack02"
+frame_progress = 0.814577
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2145900666]
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_gsskel")
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://kpxfe3p4fogp"]
+[gd_scene format=3 uid="uid://kpxfe3p4fogp"]
 
 [ext_resource type="Texture2D" uid="uid://c61nuorwep2p2" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Orc rider/Orc rider with shadows/Orc rider-Attack01.png" id="1_3ufug"]
 [ext_resource type="Texture2D" uid="uid://cuo0nsmwh8i15" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Orc rider/Orc rider with shadows/Orc rider-Attack02.png" id="2_7khb7"]
@@ -8,11 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://cloxhuujvdu1m" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Orc rider/Orc rider with shadows/Orc rider-Hurt.png" id="6_vt4ee"]
 [ext_resource type="Texture2D" uid="uid://bsrnesrawtogq" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Orc rider/Orc rider with shadows/Orc rider-Idle.png" id="7_4r08s"]
 [ext_resource type="Texture2D" uid="uid://bfdxuc78h70d2" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Orc rider/Orc rider with shadows/Orc rider-Walk.png" id="8_yb5wl"]
-[ext_resource type="Script" path="res://Scripts/OrcRider.gd" id="9_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_orcrider"]
-radius = 8.0
-height = 24.0
+[ext_resource type="Script" uid="uid://dv5617mnnsrxk" path="res://Scripts/OrcRider.gd" id="9_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1c07e"]
 atlas = ExtResource("1_3ufug")
@@ -259,7 +255,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack01",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -291,7 +287,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack02",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -329,7 +325,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack03",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -435,6 +431,10 @@ animations = [{
 "speed": 7.0
 }]
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_orcrider"]
+radius = 8.0
+height = 24.0
+
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=1905870591]
 script = ExtResource("9_script")
 
@@ -442,9 +442,10 @@ script = ExtResource("9_script")
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_ycgu4")
-animation = &"idle"
+animation = &"attack03"
+frame_progress = 0.6322611
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1102624255]
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_orcrider")
 

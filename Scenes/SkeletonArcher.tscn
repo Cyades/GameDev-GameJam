@@ -1,15 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://dukfeprloi8io"]
+[gd_scene format=3 uid="uid://dukfeprloi8io"]
 
 [ext_resource type="Texture2D" uid="uid://d7wsjaxnrliv" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Skeleton Archer/Skeleton Archer with shadows/Skeleton Archer-Attack.png" id="1_h1vnh"]
 [ext_resource type="Texture2D" uid="uid://d043xjsrbgl70" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Skeleton Archer/Skeleton Archer with shadows/Skeleton Archer-Death.png" id="2_xiq7l"]
 [ext_resource type="Texture2D" uid="uid://dbhh82sypdgqs" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Skeleton Archer/Skeleton Archer with shadows/Skeleton Archer-Hurt.png" id="3_ravag"]
 [ext_resource type="Texture2D" uid="uid://dmo8ftkj1uewl" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Skeleton Archer/Skeleton Archer with shadows/Skeleton Archer-Idle.png" id="4_gsjkr"]
 [ext_resource type="Texture2D" uid="uid://cf6lvokiflpj4" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Skeleton Archer/Skeleton Archer with shadows/Skeleton Archer-Walk.png" id="5_r8v0g"]
-[ext_resource type="Script" path="res://Scripts/SkeletonArcher.gd" id="6_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_skelarcher"]
-radius = 8.0
-height = 24.0
+[ext_resource type="Script" uid="uid://drlaicglu13w7" path="res://Scripts/SkeletonArcher.gd" id="6_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jnvl3"]
 atlas = ExtResource("1_h1vnh")
@@ -167,7 +163,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack01",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -256,6 +252,10 @@ animations = [{
 "speed": 7.0
 }]
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_skelarcher"]
+radius = 8.0
+height = 24.0
+
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=285210600]
 script = ExtResource("6_script")
 
@@ -263,9 +263,10 @@ script = ExtResource("6_script")
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_ycpdj")
-animation = &"idle"
+animation = &"attack01"
+frame_progress = 0.013746118
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1903234578]
 texture_filter = 1
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_skelarcher")

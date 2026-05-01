@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://ced6d1vdkxxt2"]
+[gd_scene format=3 uid="uid://ced6d1vdkxxt2"]
 
 [ext_resource type="Texture2D" uid="uid://bc4ts35xmofku" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Elite Orc/Elite Orc with shadows/Elite Orc-Attack01.png" id="1_3mnl6"]
 [ext_resource type="Texture2D" uid="uid://dycv5v7bdc8iv" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Elite Orc/Elite Orc with shadows/Elite Orc-Attack02.png" id="2_86skg"]
@@ -7,11 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://dlisl72iap60x" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Elite Orc/Elite Orc with shadows/Elite Orc-Hurt.png" id="5_v0g5b"]
 [ext_resource type="Texture2D" uid="uid://cdgacquiutspe" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Elite Orc/Elite Orc with shadows/Elite Orc-Idle.png" id="6_qumm2"]
 [ext_resource type="Texture2D" uid="uid://d2kx2x8mq04qf" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Elite Orc/Elite Orc with shadows/Elite Orc-Walk.png" id="7_ie16t"]
-[ext_resource type="Script" path="res://Scripts/EliteOrc.gd" id="8_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_eliteorc"]
-radius = 8.0
-height = 24.0
+[ext_resource type="Script" uid="uid://b27ip3en44f42" path="res://Scripts/EliteOrc.gd" id="8_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nkd0s"]
 atlas = ExtResource("1_3mnl6")
@@ -235,7 +231,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack01",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -273,7 +269,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack02",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -305,7 +301,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack03",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -394,16 +390,21 @@ animations = [{
 "speed": 7.0
 }]
 
-[node name="CharacterBody2D" type="CharacterBody2D" unique_id=1258942015]
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_eliteorc"]
+radius = 8.0
+height = 24.0
+
+[node name="CharacterBody2D2" type="CharacterBody2D" unique_id=1258942015]
 script = ExtResource("8_script")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=828994687]
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_deybe")
-animation = &"idle"
+animation = &"attack03"
+frame_progress = 0.51885396
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1552561355]
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_eliteorc")
 

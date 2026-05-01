@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://cfvci5xwpxkpu"]
+[gd_scene format=3 uid="uid://cfvci5xwpxkpu"]
 
 [ext_resource type="Texture2D" uid="uid://dflb2g3wyfdu1" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Orc/Orc with shadows/Orc-Attack01.png" id="1_j1tww"]
 [ext_resource type="Texture2D" uid="uid://cwd4qn050vl4j" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Orc/Orc with shadows/Orc-Attack02.png" id="2_qqqva"]
@@ -6,11 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://ejcbdwvcfi5p" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Orc/Orc with shadows/Orc-Hurt.png" id="4_0chhj"]
 [ext_resource type="Texture2D" uid="uid://c7art642u2nwf" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Orc/Orc with shadows/Orc-Idle.png" id="5_d5cnr"]
 [ext_resource type="Texture2D" uid="uid://ch3fe7fkjskmw" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Orc/Orc with shadows/Orc-Walk.png" id="6_bv38b"]
-[ext_resource type="Script" path="res://Scripts/Orc.gd" id="7_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_orc"]
-radius = 8.0
-height = 24.0
+[ext_resource type="Script" uid="uid://c4be1xxtyty4a" path="res://Scripts/Orc.gd" id="7_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3xr6g"]
 atlas = ExtResource("1_j1tww")
@@ -171,7 +167,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack01",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -194,7 +190,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack02",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -283,6 +279,10 @@ animations = [{
 "speed": 7.0
 }]
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_orc"]
+radius = 8.0
+height = 24.0
+
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=1562811850]
 script = ExtResource("7_script")
 
@@ -290,9 +290,10 @@ script = ExtResource("7_script")
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_bknht")
-animation = &"idle"
+animation = &"attack02"
+frame_progress = 0.2785434
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1977879954]
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_orc")
 
