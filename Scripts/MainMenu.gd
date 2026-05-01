@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 func _ready() -> void:
+	MusicManager.play_menu_music()
 	$Control/VBoxContainer/PlayButton.pressed.connect(_on_play_pressed)
 	$Control/VBoxContainer/SettingsButton.pressed.connect(_on_settings_pressed)
 	$Control/VBoxContainer/QuitButton.pressed.connect(_on_quit_pressed)

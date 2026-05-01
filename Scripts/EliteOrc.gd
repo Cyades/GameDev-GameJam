@@ -22,6 +22,7 @@ const ExpGemScript = preload("res://Scripts/ExpGem.gd")
 
 var target: Node2D; var current_action_animation: StringName = &""
 var is_dead: bool = false; var health: int = 0
+var hp_bar: TextureProgressBar
 var hurtbox: Area2D; var contact_hitbox: Area2D
 var attack_timer: Timer; var attack_cycle: int = 0
 var swing_damage: int = 0; var swing_hit_targets: Array = []
@@ -32,6 +33,7 @@ func _ready() -> void:
 	if not is_in_group("enemy"): add_to_group("enemy")
 	collision_layer = 0; collision_mask = 0; health = max_health
 	_setup_combat_areas()
+	_setup_hp_bar()
 	target = CombatUtils.find_priority_target(global_position, get_tree())
 	_configure_animation_loops()
 	animated_sprite.speed_scale = 1.5
@@ -72,6 +74,7 @@ func _on_attack_timer() -> void:
 func take_damage(amount: int = 1) -> void:
 	if is_dead: return
 	health = maxi(health - maxi(amount, 0), 0)
+	if hp_bar: hp_bar.value = health
 	if health <= 0: _play_death()
 	else: _play_action(&"hurt")
 func get_contact_damage() -> int: return contact_damage
@@ -98,6 +101,21 @@ func _mk_area(n: String, layer: int, mask: int, grp: String, rad: float) -> Area
 	var c := cs.shape as CircleShape2D
 	if c == null: c = CircleShape2D.new(); cs.shape = c
 	c.radius = max(rad, 1.0); return a
+
+func _setup_hp_bar() -> void:
+	hp_bar = TextureProgressBar.new()
+	hp_bar.texture_under = preload("res://Assets GameJam/Pixel Health Bar/Bar/no health bar.png")
+	hp_bar.texture_over = preload("res://Assets GameJam/Pixel Health Bar/Bar/empty health bar.png")
+	hp_bar.texture_progress = preload("res://Assets GameJam/Pixel Health Bar/Bar/health bar.png")
+	hp_bar.z_index = 20
+	hp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hp_bar.scale = Vector2(0.8, 0.8) / scale
+	var visual_scale = scale.y
+	if animated_sprite: visual_scale *= animated_sprite.scale.y
+	hp_bar.position = Vector2(-25 / scale.x, -50 * visual_scale / scale.y)
+	hp_bar.max_value = max_health
+	hp_bar.value = health
+	add_child(hp_bar)
 
 func _play_action(a: StringName) -> void:
 	if not _has_animation(a): return

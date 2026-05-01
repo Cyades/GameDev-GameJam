@@ -77,6 +77,7 @@ func set_gacha_system(system: Node) -> void:
 func _ready() -> void:
 	if not is_in_group("player"):
 		add_to_group("player")
+	z_index = 1
 		
 	level_up_audio_player = AudioStreamPlayer.new()
 	level_up_audio_player.bus = "SFX"
@@ -661,6 +662,7 @@ func _trigger_death() -> void:
 	if is_dead:
 		return
 	is_dead = true
+	MusicManager.play_game_over_music()
 	velocity = Vector2.ZERO
 	if melee_cycle_timer != null:
 		melee_cycle_timer.stop()

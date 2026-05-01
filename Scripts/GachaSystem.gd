@@ -78,6 +78,7 @@ func _open_gacha_ui(player: Node2D) -> void:
 	
 	# Pause the game
 	get_tree().paused = true
+	MusicManager.play_gacha_music()
 	
 	# Build UI if needed
 	if gacha_canvas == null:
@@ -245,6 +246,7 @@ func _spawn_companion_from_result() -> void:
 	
 	var companion := scene.instantiate() as Node2D
 	if companion == null: return
+	companion.z_index = 1
 	
 	var player_lvl := pending_player.get("current_level") as int if pending_player.get("current_level") != null else 1
 	var level_multiplier := 1.0 + (player_lvl * 0.1)
@@ -274,6 +276,7 @@ func _on_close_button_pressed() -> void:
 	spin_started = false
 	
 	get_tree().paused = false
+	MusicManager.resume_battle_music()
 
 # ═══════════════════════════════════════════════════════════════════
 # CREATE UI — all built in code, works during pause

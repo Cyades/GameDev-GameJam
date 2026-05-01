@@ -7,6 +7,7 @@ extends Area2D
 var direction: Vector2 = Vector2.RIGHT
 
 func _ready() -> void:
+	z_index = 1
 	# Destroy after lifetime
 	var timer := Timer.new()
 	timer.wait_time = lifetime

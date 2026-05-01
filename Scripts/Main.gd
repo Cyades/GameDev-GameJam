@@ -95,6 +95,8 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 
+	MusicManager.play_battle_music()
+
 	randomize()
 	# Enable Y-sorting: characters lower on screen render in front
 	y_sort_enabled = true
@@ -207,6 +209,14 @@ func _process(delta: float) -> void:
 	if minute != current_wave:
 		current_wave = minute
 		_apply_wave(current_wave)
+		
+	# Trigger Boss Music 5 seconds before spawn
+	if not boss1_spawned and elapsed_time >= 295.0 and elapsed_time < 300.0 and MusicManager.current_state != "boss":
+		MusicManager.play_boss_music()
+	if not boss2_spawned and elapsed_time >= 595.0 and elapsed_time < 600.0 and MusicManager.current_state != "boss":
+		MusicManager.play_boss_music()
+	if not boss3_spawned and elapsed_time >= 895.0 and elapsed_time < 900.0 and MusicManager.current_state != "boss":
+		MusicManager.play_boss_music()
 	
 	# BOSS 1 — spawn at minute 5 (300s)
 	if not boss1_spawned and elapsed_time >= 300.0:
@@ -238,6 +248,7 @@ func _on_enemy_spawn_timer_timeout() -> void:
 	if scene == null: return
 	var enemy := scene.instantiate() as Node2D
 	if enemy == null: return
+	enemy.z_index = 1
 	
 	# Apply HP scaling based on time
 	var minute := int(elapsed_time / 60.0)
@@ -257,6 +268,7 @@ func _on_enemy_killed() -> void:
 func _spawn_boss(boss_scene: PackedScene, boss_index: int) -> void:
 	var boss := boss_scene.instantiate() as Node2D
 	if boss == null: return
+	boss.z_index = 1
 	
 	if boss_index == 2:
 		boss.add_to_group("boss")
@@ -279,15 +291,18 @@ func _spawn_boss(boss_scene: PackedScene, boss_index: int) -> void:
 func _on_boss1_defeated() -> void:
 	boss1_alive = false
 	print("[BOSS] Greatsword Skeleton defeated!")
+	MusicManager.resume_battle_music()
 
 func _on_boss2_defeated() -> void:
 	boss2_alive = false
 	print("[BOSS] Elite Orc defeated!")
+	MusicManager.resume_battle_music()
 
 func _on_boss3_defeated() -> void:
 	boss3_alive = false
 	game_won = true
 	print("[GAME] YOU WIN! Werebear defeated!")
+	MusicManager.play_win_music()
 	# TODO: Show victory screen
 
 func _get_spawn_position_outside_camera() -> Vector2:
@@ -405,11 +420,15 @@ func _update_timer_hud() -> void:
 	# Boss warnings
 	if boss_warning_label:
 		# 5 seconds before boss 1
-		if not boss1_spawned and elapsed_time >= 475.0 and elapsed_time < 480.0:
+		if not boss1_spawned and elapsed_time >= 295.0 and elapsed_time < 300.0:
 			boss_warning_label.text = "⚔ BOSS INCOMING ⚔"
 			boss_warning_label.visible = true
 		# 5 seconds before boss 2
-		elif not boss2_spawned and elapsed_time >= 895.0 and elapsed_time < 900.0:
+		elif not boss2_spawned and elapsed_time >= 595.0 and elapsed_time < 600.0:
+			boss_warning_label.text = "⚔ BOSS INCOMING ⚔"
+			boss_warning_label.visible = true
+		# 5 seconds before boss 3
+		elif not boss3_spawned and elapsed_time >= 895.0 and elapsed_time < 900.0:
 			boss_warning_label.text = "🐻 FINAL BOSS INCOMING 🐻"
 			boss_warning_label.visible = true
 		# Show when boss is alive

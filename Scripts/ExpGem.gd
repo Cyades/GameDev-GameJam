@@ -26,6 +26,7 @@ const GEM_DATA: Dictionary = {
 }
 
 func _ready() -> void:
+	z_index = 1
 	if not is_in_group("exp_gem"):
 		add_to_group("exp_gem")
 

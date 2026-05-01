@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 UISound="*res://Scripts/UISound.gd"
 CombatSound="*res://Scripts/CombatSound.gd"
+MusicManager="*res://Scripts/MusicManager.gd"
 
 [display]
 
