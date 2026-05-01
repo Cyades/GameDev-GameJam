@@ -1,18 +1,18 @@
-[gd_scene load_steps=4 format=3 uid="uid://cx6y4r3v2y1x0"]
+[gd_scene format=3 uid="uid://cx6y4r3v2y1x0"]
 
-[ext_resource type="Script" path="res://Scripts/Arrow.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Arrow(Projectile)/Arrow01(32x32).png" id="2_texture"]
+[ext_resource type="Script" uid="uid://b5p3nujik8ust" path="res://Scripts/Arrow.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bf63qq04ltn0y" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Arrow(Projectile)/Arrow01(32x32).png" id="2_texture"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_arrow"]
 size = Vector2(24, 8)
 
-[node name="Arrow" type="Area2D"]
+[node name="Arrow" type="Area2D" unique_id=507685131]
 collision_layer = 0
 collision_mask = 8
 script = ExtResource("1_script")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=246670897]
 texture = ExtResource("2_texture")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=749315715]
 shape = SubResource("RectangleShape2D_arrow")

@@ -199,6 +199,16 @@ func _spawn_companion_from_result() -> void:
 	var companion := scene.instantiate() as Node2D
 	if companion == null: return
 	
+	# Apply companion scaling based on player level
+	var player_lvl := pending_player.get("current_level") as int if pending_player.get("current_level") != null else 1
+	var level_multiplier := 1.0 + (player_lvl * 0.1) # +10% stats per player level
+	
+	if companion.get("max_health") != null:
+		companion.set("max_health", int(companion.get("max_health") * level_multiplier))
+	for dmg_prop in ["attack_damage", "attack01_damage", "attack02_damage", "attack03_damage", "arrow_damage", "knockback_force"]:
+		if companion.get(dmg_prop) != null:
+			companion.set(dmg_prop, int(companion.get(dmg_prop) * level_multiplier))
+	
 	var offset := Vector2(randf_range(-30, 30), randf_range(-30, 30))
 	companion.global_position = pending_player.global_position + offset
 	

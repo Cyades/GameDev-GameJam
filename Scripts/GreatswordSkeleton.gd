@@ -3,7 +3,7 @@ extends CharacterBody2D
 ## Large, high HP, AOE attacks, scale 2x
 
 @export var move_speed: float = 75.0
-@export var max_health: int = 50
+@export var max_health: int = 800
 @export var contact_damage: int = 3
 @export var attack_range: float = 40.0
 @export var attack_interval: float = 1.8

@@ -134,6 +134,13 @@ func _on_enemy_spawn_timer_timeout() -> void:
 	if scene == null: return
 	var enemy := scene.instantiate() as Node2D
 	if enemy == null: return
+	
+	# Apply HP scaling based on time
+	var minute := int(elapsed_time / 60.0)
+	var hp_multiplier = 1.0 + (minute * 0.3)
+	if enemy.get("max_health") != null:
+		enemy.set("max_health", int(enemy.get("max_health") * hp_multiplier))
+	
 	enemy.global_position = _get_spawn_position_outside_camera()
 	enemy_container.add_child(enemy)
 	

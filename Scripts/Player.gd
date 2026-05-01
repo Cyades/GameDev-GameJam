@@ -1,7 +1,7 @@
 extends CharacterBody2D
 
 @export var walk_speed: float = 150.0
-@export var sprint_speed_multiplier: float = 1.6
+@export var sprint_speed_multiplier: float = 1.4
 @export var max_health: int = 20
 @export var melee_damage: int = 1
 @export var melee_interval: float = 0.65
@@ -580,8 +580,8 @@ func _level_up() -> void:
 	if current_level % 2 == 0:
 		melee_damage += 1
 	
-	# +5% walk speed per level (capped at 2x base)
-	walk_speed = minf(walk_speed * 1.05, 300.0)
+	# +1 walk speed per level (capped at 180.0)
+	walk_speed = minf(walk_speed + 1.0, 180.0)
 	
 	# Slightly faster attack interval (min 0.30s)
 	melee_interval = maxf(melee_interval * 0.95, 0.30)

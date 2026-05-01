@@ -3,7 +3,7 @@ extends CharacterBody2D
 ## Massive, highest HP, enrage, AOE + DOT
 
 @export var move_speed: float = 80.0
-@export var max_health: int = 100
+@export var max_health: int = 2500
 @export var contact_damage: int = 4
 @export var attack_range: float = 45.0
 @export var attack_interval: float = 1.5
