@@ -1,14 +1,14 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3 uid="uid://bufco4s2txryu"]
 
-[ext_resource type="Script" path="res://Scripts/SettingsMenu.gd" id="1_script"]
-[ext_resource type="FontFile" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Font/NormalFont.ttf" id="2_font"]
-[ext_resource type="Texture2D" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/nine_path_panel.png" id="3_bg"]
-[ext_resource type="Texture2D" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/h_slidder_grabber.png" id="4_grabber"]
-[ext_resource type="Texture2D" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_normal.png" id="5_btn"]
-[ext_resource type="Texture2D" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_hover.png" id="6_btn"]
-[ext_resource type="Texture2D" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_pressed.png" id="7_btn"]
+[ext_resource type="Script" uid="uid://ccy1414rkyf0t" path="res://Scripts/SettingsMenu.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://by3ca6boy2a2b" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Font/NormalFont.ttf" id="2_font"]
+[ext_resource type="Texture2D" uid="uid://d11epnrjue0ba" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Receptacle/Receptacle Rectangle/BackgroundScroll.png" id="2_v1gh5"]
+[ext_resource type="Texture2D" uid="uid://dtbki7jsbiqbg" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/h_slidder_grabber.png" id="4_grabber"]
+[ext_resource type="Texture2D" uid="uid://cxvykcjnqrlfo" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_normal.png" id="5_btn"]
+[ext_resource type="Texture2D" uid="uid://bnma7nawqspos" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_hover.png" id="6_btn"]
+[ext_resource type="Texture2D" uid="uid://uprgftekmlrj" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_pressed.png" id="7_btn"]
 
-[node name="SettingsMenu" type="Control"]
+[node name="SettingsMenu" type="Control" unique_id=1797921153]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -17,7 +17,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Panel" type="NinePatchRect" parent="."]
+[node name="Panel" type="NinePatchRect" parent="." unique_id=884712614]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -30,13 +30,14 @@ offset_right = 200.0
 offset_bottom = 150.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("3_bg")
+texture = ExtResource("2_v1gh5")
 patch_margin_left = 16
 patch_margin_top = 16
 patch_margin_right = 16
 patch_margin_bottom = 16
 
-[node name="Title" type="Label" parent="Panel"]
+[node name="Title" type="Label" parent="Panel" unique_id=2040505963]
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -48,7 +49,7 @@ theme_override_font_sizes/font_size = 24
 text = "SETTINGS"
 horizontal_alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=1902267187]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -62,16 +63,17 @@ offset_bottom = 75.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MasterHBox" type="HBoxContainer" parent="Panel/VBoxContainer"]
+[node name="MasterHBox" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=1242646444]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/VBoxContainer/MasterHBox"]
+[node name="Label" type="Label" parent="Panel/VBoxContainer/MasterHBox" unique_id=729008554]
+texture_filter = 1
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_font")
 text = "Master"
 
-[node name="MasterSlider" type="HSlider" parent="Panel/VBoxContainer/MasterHBox"]
+[node name="MasterSlider" type="HSlider" parent="Panel/VBoxContainer/MasterHBox" unique_id=2110281840]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_icons/grabber = ExtResource("4_grabber")
@@ -80,16 +82,17 @@ max_value = 1.0
 step = 0.05
 value = 1.0
 
-[node name="BGMHBox" type="HBoxContainer" parent="Panel/VBoxContainer"]
+[node name="BGMHBox" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=1120363827]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/VBoxContainer/BGMHBox"]
+[node name="Label" type="Label" parent="Panel/VBoxContainer/BGMHBox" unique_id=1070134758]
+texture_filter = 1
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_font")
 text = "BGM"
 
-[node name="BGMSlider" type="HSlider" parent="Panel/VBoxContainer/BGMHBox"]
+[node name="BGMSlider" type="HSlider" parent="Panel/VBoxContainer/BGMHBox" unique_id=583049252]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_icons/grabber = ExtResource("4_grabber")
@@ -98,16 +101,17 @@ max_value = 1.0
 step = 0.05
 value = 1.0
 
-[node name="SFXHBox" type="HBoxContainer" parent="Panel/VBoxContainer"]
+[node name="SFXHBox" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=1292142243]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/VBoxContainer/SFXHBox"]
+[node name="Label" type="Label" parent="Panel/VBoxContainer/SFXHBox" unique_id=1292602803]
+texture_filter = 1
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_font")
 text = "SFX"
 
-[node name="SFXSlider" type="HSlider" parent="Panel/VBoxContainer/SFXHBox"]
+[node name="SFXSlider" type="HSlider" parent="Panel/VBoxContainer/SFXHBox" unique_id=978679724]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_icons/grabber = ExtResource("4_grabber")
@@ -116,7 +120,8 @@ max_value = 1.0
 step = 0.05
 value = 1.0
 
-[node name="CloseButton" type="TextureButton" parent="Panel"]
+[node name="CloseButton" type="TextureButton" parent="Panel" unique_id=1059506533]
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -134,7 +139,8 @@ texture_hover = ExtResource("6_btn")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="Label" type="Label" parent="Panel/CloseButton"]
+[node name="Label" type="Label" parent="Panel/CloseButton" unique_id=93245775]
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

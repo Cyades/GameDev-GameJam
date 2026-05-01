@@ -1,3 +1,4 @@
+@tool
 extends Node2D
 ## Main.gd — 15-minute wave spawner with scaling difficulty & boss fights
 
@@ -58,6 +59,9 @@ var wave_config: Array = [
 @export var spawn_ring_width: float = 120.0
 @export var game_duration: float = 900.0  # 15 minutes = 900 seconds
 
+# Arena boundary (centered at origin)
+const ARENA_HALF_SIZE: float = 1280.0  # 2560x2560 px total arena
+
 @onready var player: Node2D = $Player
 @onready var spawn_timer: Timer = $EnemySpawnTimer
 @onready var enemy_container: Node2D = $Enemies
@@ -84,6 +88,13 @@ var boss_warning_label: Label
 var gacha_system: Node
 
 func _ready() -> void:
+	# Always create boundary (works in editor + runtime)
+	_create_arena_boundary()
+
+	# Skip game logic when running inside the Godot editor
+	if Engine.is_editor_hint():
+		return
+
 	randomize()
 	# Enable Y-sorting: characters lower on screen render in front
 	y_sort_enabled = true
@@ -104,8 +115,86 @@ func _ready() -> void:
 	spawn_timer.start()
 
 
+# ═══════════════════════════════════════════════════════════════════
+# ARENA BOUNDARY
+# ═══════════════════════════════════════════════════════════════════
+
+func _create_arena_boundary() -> void:
+	var h := ARENA_HALF_SIZE
+	var wall_thickness := 48.0  # thick enough to block fast movement
+
+	# ── 1. Thick collision walls (4 sides) ─────────────────────────
+	# Position at the EDGE so inner face = ±h
+	var wall_defs := [
+		# [center_x, center_y, size_x,        size_y,        visual_color,    name]
+		[0.0,    -(h + wall_thickness * 0.5),  h * 2 + wall_thickness * 2, wall_thickness, "574a3b", "WallTop"],
+		[0.0,     (h + wall_thickness * 0.5),  h * 2 + wall_thickness * 2, wall_thickness, "574a3b", "WallBottom"],
+		[-(h + wall_thickness * 0.5),  0.0,   wall_thickness, h * 2,  "574a3b", "WallLeft"],
+		[ (h + wall_thickness * 0.5),  0.0,   wall_thickness, h * 2,  "574a3b", "WallRight"],
+	]
+
+	for wd in wall_defs:
+		var body := StaticBody2D.new()
+		body.name = wd[5]
+		body.position = Vector2(wd[0], wd[1])
+
+		# Collision
+		var coll := CollisionShape2D.new()
+		var rect := RectangleShape2D.new()
+		rect.size = Vector2(wd[2], wd[3])
+		coll.shape = rect
+		body.add_child(coll)
+
+		# Visual — dark stone wall polygon
+		var poly := Polygon2D.new()
+		var hw: float = float(wd[2]) * 0.5
+		var hh: float = float(wd[3]) * 0.5
+		poly.polygon = PackedVector2Array([
+			Vector2(-hw, -hh), Vector2(hw, -hh),
+			Vector2(hw,  hh),  Vector2(-hw,  hh)
+		])
+		poly.color = Color.from_string(wd[4], Color.DARK_SLATE_GRAY)
+		poly.z_index = -2
+		body.add_child(poly)
+
+		add_child(body)
+
+	# ── 2. Visual border line (inner edge) ─────────────────────────
+	var border_pts := PackedVector2Array([
+		Vector2(-h, -h), Vector2(h, -h),
+		Vector2(h,  h),  Vector2(-h,  h),
+		Vector2(-h, -h)
+	])
+	var border := Line2D.new()
+	border.name = "ArenaBorderLine"
+	border.points = border_pts
+	border.width = 4.0
+	border.default_color = Color(1.0, 0.82, 0.3, 1.0)
+	border.z_index = 1
+	add_child(border)
+
+	# Corner cross markers
+	var corner_positions := [
+		Vector2(-h, -h), Vector2(h, -h), Vector2(h, h), Vector2(-h, h)
+	]
+	for cp in corner_positions:
+		for pts in [
+			[cp + Vector2(-28, 0), cp + Vector2(28, 0)],
+			[cp + Vector2(0, -28), cp + Vector2(0, 28)]
+		]:
+			var ln := Line2D.new()
+			ln.points = PackedVector2Array(pts)
+			ln.width = 4.0
+			ln.default_color = Color(1.0, 0.9, 0.4, 1.0)
+			ln.z_index = 2
+			add_child(ln)
+
+
+
+
 
 func _process(delta: float) -> void:
+	if Engine.is_editor_hint(): return
 	if game_won: return
 	elapsed_time += delta
 	
@@ -210,7 +299,14 @@ func _get_spawn_position_outside_camera() -> Vector2:
 	var max_radius := min_radius + spawn_ring_width
 	var angle := randf_range(0.0, TAU)
 	var radius := randf_range(min_radius, max_radius)
-	return center + Vector2.RIGHT.rotated(angle) * radius
+	var raw_pos := center + Vector2.RIGHT.rotated(angle) * radius
+	# Clamp inside arena walls (with a small margin so enemy isn't inside wall)
+	var wall_margin := 24.0
+	var limit := ARENA_HALF_SIZE - wall_margin
+	return Vector2(
+		clampf(raw_pos.x, -limit, limit),
+		clampf(raw_pos.y, -limit, limit)
+	)
 
 func get_elapsed_time() -> float: return elapsed_time
 func get_kill_count() -> int: return kill_count
