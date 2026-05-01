@@ -98,9 +98,9 @@ func _ready() -> void:
 ## DEBUG: Spawn companions at start — REMOVE AFTER TESTING
 func _debug_spawn_all_companions() -> void:
 	var scenes: Array[String] = [
-		"res://Scenes/Swordsman.tscn",
-		"res://Scenes/Swordsman.tscn",
-		"res://Scenes/Swordsman.tscn",
+		"res://Scenes/KnightTemplar.tscn",
+		"res://Scenes/KnightTemplar.tscn",
+		"res://Scenes/KnightTemplar.tscn",
 	]
 	var angle_step := TAU / scenes.size()
 	for i in scenes.size():

@@ -46,7 +46,7 @@ func _ready() -> void:
 	add_child(action_timer)
 	action_timer.start()
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	var separation := CombatUtils.get_separation_force(self, get_tree()) if not is_dead else Vector2.ZERO
 	if is_dead or _is_action_locked():
 		velocity = Vector2.ZERO
@@ -124,7 +124,7 @@ func _on_action_timer_timeout() -> void:
 func _apply_burn(enemy: Node2D) -> void:
 	if not is_instance_valid(enemy) or enemy.get("is_dead") == true:
 		return
-	var ticks_left := burn_ticks
+	var state := {"ticks_left": burn_ticks}
 	var bt := Timer.new()
 	bt.wait_time = burn_interval
 	bt.one_shot = false
@@ -135,8 +135,8 @@ func _apply_burn(enemy: Node2D) -> void:
 			return
 		if enemy.has_method("take_damage"):
 			enemy.call("take_damage", burn_damage)
-		ticks_left -= 1
-		if ticks_left <= 0:
+		state["ticks_left"] -= 1
+		if state["ticks_left"] <= 0:
 			bt.queue_free()
 	)
 	bt.start()
@@ -162,12 +162,14 @@ func _face(t: Node2D) -> void:
 func take_damage(amount: int = 1) -> void:
 	if is_dead:
 		return
-	var red := 1 if current_action_animation == &"block" else 0
-	health = maxi(health - maxi(maxi(amount, 0) - red, 0), 0)
+	# Block fully nullifies incoming damage
+	if current_action_animation == &"block":
+		return
+	health = maxi(health - maxi(amount, 0), 0)
 	if health <= 0:
 		_trigger_death()
 		return
-	if current_action_animation != &"block" and _has_animation(&"hurt"):
+	if _has_animation(&"hurt"):
 		_play_action(&"hurt")
 
 func receive_heal(a: int) -> void:
