@@ -47,6 +47,7 @@ func _ready() -> void:
 	target = _find_nearest_target()
 
 	_configure_animation_loops()
+	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
 	_play_animation(&"idle")

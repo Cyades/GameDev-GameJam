@@ -80,6 +80,7 @@ func _ready() -> void:
 	_setup_combat_timers()
 	_create_arrow_indicator()
 	_configure_animation_loops()
+	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
 	_play_animation(&"idle")

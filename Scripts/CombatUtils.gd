@@ -77,3 +77,23 @@ static func find_all_enemies_near(point: Vector2, tree: SceneTree, max_range: fl
 		if point.distance_squared_to((e as Node2D).global_position) < range_sq:
 			result.append(e as Node2D)
 	return result
+
+## ═══ COMPANION SEPARATION: Push away from other companions ═══
+## Returns a separation velocity to prevent companions from stacking.
+## Uses quadratic falloff and a dead-zone threshold to avoid micro-vibration.
+static func get_separation_force(self_node: Node2D, tree: SceneTree, sep_radius: float = 30.0, sep_strength: float = 50.0) -> Vector2:
+	var force := Vector2.ZERO
+	for c in tree.get_nodes_in_group("companion"):
+		if not is_instance_valid(c) or not c is Node2D: continue
+		if c == self_node: continue
+		if c.get("is_dead") == true: continue
+		var diff := self_node.global_position - (c as Node2D).global_position
+		var dist := diff.length()
+		if dist < sep_radius and dist > 1.0:
+			# Quadratic falloff — gentle near boundary, strong only when very close
+			var ratio := 1.0 - dist / sep_radius
+			force += diff.normalized() * sep_strength * ratio * ratio
+	# Dead-zone: ignore very small forces that just cause jitter
+	if force.length() < 2.0:
+		return Vector2.ZERO
+	return force

@@ -40,8 +40,11 @@ func _ready() -> void:
 	collision_mask  = 0
 
 	_configure_animation_loops()
+	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
+	if not animated_sprite.frame_changed.is_connected(_on_frame_changed):
+		animated_sprite.frame_changed.connect(_on_frame_changed)
 	_play_animation(&"idle")
 
 	action_timer = Timer.new()
@@ -54,7 +57,8 @@ func _ready() -> void:
 
 # ─── Physics ──────────────────────────────────────────────────────────────────
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	var separation := CombatUtils.get_separation_force(self, get_tree()) if not is_dead else Vector2.ZERO
 	if is_dead or _is_action_locked():
 		velocity = Vector2.ZERO
 		move_and_slide()
@@ -72,36 +76,43 @@ func _physics_process(_delta: float) -> void:
 	var threat := CombatUtils.find_enemy_near_player(global_position, get_tree(), 120.0)
 	if threat != null:
 		var to_threat := threat.global_position - global_position
-		if to_threat.length() > attack_range * 0.8:
+		var threat_dist := to_threat.length()
+		if threat_dist > attack_range:
 			var dir := to_threat.normalized()
-			velocity = dir * move_speed * 1.3
-			if dir.x != 0.0:
+			velocity = dir * move_speed * 1.3 + separation
+			if absf(dir.x) > 0.1:
 				animated_sprite.flip_h = dir.x < 0.0
 			_play_animation(&"walk")
+			move_and_slide()
+			return
+		else:
+			velocity = separation
+			if absf(to_threat.x) > 4.0:
+				animated_sprite.flip_h = to_threat.x < 0.0
+			_play_animation(&"idle")
 			move_and_slide()
 			return
 
 	var to_leader := leader.global_position - global_position
 	if to_leader.length() > follow_distance:
 		var dir := to_leader.normalized()
-		velocity = dir * move_speed
-		if dir.x != 0.0:
+		velocity = dir * move_speed + separation
+		if absf(dir.x) > 0.1:
 			animated_sprite.flip_h = dir.x < 0.0
 		_play_animation(&"walk")
 	else:
-		velocity = Vector2.ZERO
+		velocity = separation
 		_play_animation(&"idle")
 
 	move_and_slide()
 
-# ─── 8-way snap (same logic as Player) ───────────────────────────────────────
+# ─── Free-aim direction (direct at target) ────────────────────────────────────────
 
-func _snap_to_8way(dir: Vector2) -> Vector2:
+func _get_direction_to(target_pos: Vector2) -> Vector2:
+	var dir := (target_pos - global_position).normalized()
 	if dir.length_squared() < 0.01:
 		return attack_direction
-	var angle_rad: float = dir.angle()
-	var snapped_angle: float = round(angle_rad / (PI / 4.0)) * (PI / 4.0)
-	return Vector2.RIGHT.rotated(snapped_angle)
+	return dir
 
 # ─── Action timer ─────────────────────────────────────────────────────────────
 
@@ -113,9 +124,9 @@ func _on_action_timer_timeout() -> void:
 	if enemy == null:
 		return
 
-	# Calculate 8-way direction towards enemy
+	# Calculate free-aim direction towards enemy
 	var to_enemy := enemy.global_position - global_position
-	attack_direction = _snap_to_8way(to_enemy)
+	attack_direction = _get_direction_to(enemy.global_position)
 
 	# Face the enemy
 	if attack_direction.x != 0.0:
@@ -203,12 +214,20 @@ func _on_animation_finished() -> void:
 	if animated_sprite.animation == &"death":
 		animated_sprite.pause()
 		return
-	# Spawn arrow at end of attack animation
-	if pending_arrow_spawn and (animated_sprite.animation == &"attack01" or animated_sprite.animation == &"attack02"):
-		_spawn_arrow()
-		pending_arrow_spawn = false
 	if animated_sprite.animation == current_action_animation:
 		current_action_animation = &""
+
+func _on_frame_changed() -> void:
+	# Spawn arrow on the LAST frame of attack animation
+	if not pending_arrow_spawn: return
+	var anim := animated_sprite.animation
+	if anim != &"attack01" and anim != &"attack02": return
+	var frames := animated_sprite.sprite_frames
+	if frames == null: return
+	var total_frames := frames.get_frame_count(anim)
+	if animated_sprite.frame >= total_frames - 1:
+		_spawn_arrow()
+		pending_arrow_spawn = false
 
 func _is_action_locked() -> bool:
 	return current_action_animation != &""

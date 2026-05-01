@@ -8,6 +8,7 @@ extends CharacterBody2D
 @export var attack02_damage: int = 5
 @export var attack_range: float = 90.0
 @export var action_interval: float = 2.0
+@export var projectile_speed: float = 200.0
 
 ## ── Collision layers ─────────────────────────────────────────────────────────
 const LAYER_PLAYER_HURTBOX: int = 1 << 1
@@ -24,6 +25,7 @@ var current_action_animation: StringName = &""
 var action_timer: Timer
 var leader: Node2D
 var attack_toggle: bool = false  # alternates between attack01 and attack02
+var pending_projectile_target: Node2D = null  # deferred projectile spawn
 
 # ─── Ready ────────────────────────────────────────────────────────────────────
 
@@ -40,8 +42,11 @@ func _ready() -> void:
 	collision_mask  = 0
 
 	_configure_animation_loops()
+	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
+	if not animated_sprite.frame_changed.is_connected(_on_frame_changed):
+		animated_sprite.frame_changed.connect(_on_frame_changed)
 	_play_animation(&"idle")
 
 	action_timer = Timer.new()
@@ -54,7 +59,8 @@ func _ready() -> void:
 
 # ─── Physics ──────────────────────────────────────────────────────────────────
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	var separation := CombatUtils.get_separation_force(self, get_tree()) if not is_dead else Vector2.ZERO
 	if is_dead or _is_action_locked():
 		velocity = Vector2.ZERO
 		move_and_slide()
@@ -72,24 +78,32 @@ func _physics_process(_delta: float) -> void:
 	var threat := CombatUtils.find_enemy_near_player(global_position, get_tree(), 110.0)
 	if threat != null:
 		var to_threat := threat.global_position - global_position
-		if to_threat.length() > attack_range * 0.8:
+		var threat_dist := to_threat.length()
+		if threat_dist > attack_range:
 			var dir := to_threat.normalized()
-			velocity = dir * move_speed * 1.3
-			if dir.x != 0.0:
+			velocity = dir * move_speed * 1.3 + separation
+			if absf(dir.x) > 0.1:
 				animated_sprite.flip_h = dir.x < 0.0
 			_play_animation(&"walk")
+			move_and_slide()
+			return
+		else:
+			velocity = separation
+			if absf(to_threat.x) > 4.0:
+				animated_sprite.flip_h = to_threat.x < 0.0
+			_play_animation(&"idle")
 			move_and_slide()
 			return
 
 	var to_leader := leader.global_position - global_position
 	if to_leader.length() > follow_distance:
 		var dir := to_leader.normalized()
-		velocity = dir * move_speed
-		if dir.x != 0.0:
+		velocity = dir * move_speed + separation
+		if absf(dir.x) > 0.1:
 			animated_sprite.flip_h = dir.x < 0.0
 		_play_animation(&"walk")
 	else:
-		velocity = Vector2.ZERO
+		velocity = separation
 		_play_animation(&"idle")
 
 	move_and_slide()
@@ -121,15 +135,12 @@ func _do_attack01(enemy: Node2D) -> void:
 	if enemy.has_method("take_damage"):
 		enemy.call("take_damage", attack01_damage)
 
-# ─── Attack 02 ────────────────────────────────────────────────────────────────
+# ─── Attack 02 (PROJECTILE) ───────────────────────────────────────────────────
 
 func _do_attack02(enemy: Node2D) -> void:
 	_face_target(enemy)
 	_play_action(&"attack02")
-	_spawn_effect_on_target(enemy, &"attack02 effect")
-
-	if enemy.has_method("take_damage"):
-		enemy.call("take_damage", attack02_damage)
+	pending_projectile_target = enemy  # Projectile fires on 2nd-to-last frame
 
 # ─── Effect spawner ──────────────────────────────────────────────────────────
 
@@ -149,6 +160,76 @@ func _spawn_effect_on_target(target: Node2D, anim_name: StringName) -> void:
 		effect.animation_finished.connect(effect.queue_free)
 	else:
 		effect.queue_free()
+
+## Spawn a projectile that travels from wizard to enemy position
+func _spawn_projectile(enemy: Node2D) -> void:
+	var dir := (enemy.global_position - global_position).normalized()
+	if dir.length_squared() < 0.01:
+		dir = Vector2.RIGHT
+
+	var projectile := AnimatedSprite2D.new()
+	projectile.name = "WizardProjectile"
+	projectile.sprite_frames = animated_sprite.sprite_frames
+	projectile.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	projectile.z_index = 15
+
+	get_parent().add_child(projectile)
+	projectile.global_position = global_position + dir * 12.0
+	projectile.rotation = dir.angle()  # Rotate to face travel direction
+
+	# Play the projectile animation
+	var anim_name := &"attack02 effect"
+	if projectile.sprite_frames.has_animation(anim_name):
+		projectile.sprite_frames.set_animation_loop(anim_name, true)
+		projectile.play(anim_name)
+
+	# Move the projectile via a script-like approach using a timer + process
+	var target_pos := enemy.global_position
+	var dmg := attack02_damage
+	var spd := projectile_speed
+	var tree_ref := get_tree()
+	var max_dist := attack_range * 1.5
+	var traveled := 0.0
+
+	projectile.set_meta("dir", dir)
+	projectile.set_meta("spd", spd)
+	projectile.set_meta("dmg", dmg)
+	projectile.set_meta("traveled", 0.0)
+	projectile.set_meta("max_dist", max_dist)
+	projectile.set_meta("hit", false)
+
+	# Use a process callback to move the projectile
+	var callable := func(delta: float) -> void:
+		if not is_instance_valid(projectile): return
+		if projectile.get_meta("hit"): return
+		var d: Vector2 = projectile.get_meta("dir")
+		var s: float = projectile.get_meta("spd")
+		var t: float = projectile.get_meta("traveled")
+		var md: float = projectile.get_meta("max_dist")
+		projectile.global_position += d * s * delta
+		t += s * delta
+		projectile.set_meta("traveled", t)
+		if t >= md:
+			projectile.queue_free()
+			return
+		# Check hit against enemies
+		for e in tree_ref.get_nodes_in_group("enemy"):
+			if not is_instance_valid(e) or not e is Node2D: continue
+			if e.get("is_dead") == true: continue
+			if projectile.global_position.distance_to((e as Node2D).global_position) < 16.0:
+				if e.has_method("take_damage"):
+					e.call("take_damage", projectile.get_meta("dmg"))
+				projectile.set_meta("hit", true)
+				projectile.queue_free()
+				return
+
+	# Connect to the tree's process_frame signal for movement
+	var timer := Timer.new()
+	timer.wait_time = 0.016
+	timer.one_shot = false
+	projectile.add_child(timer)
+	timer.timeout.connect(func(): callable.call(0.016))
+	timer.start()
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -210,6 +291,18 @@ func _on_animation_finished() -> void:
 		return
 	if animated_sprite.animation == current_action_animation:
 		current_action_animation = &""
+
+func _on_frame_changed() -> void:
+	# Spawn projectile on 2nd-to-last frame of attack02
+	if pending_projectile_target == null: return
+	if animated_sprite.animation != &"attack02": return
+	var frames := animated_sprite.sprite_frames
+	if frames == null: return
+	var total_frames := frames.get_frame_count(&"attack02")
+	if animated_sprite.frame >= total_frames - 2:
+		if is_instance_valid(pending_projectile_target):
+			_spawn_projectile(pending_projectile_target)
+		pending_projectile_target = null
 
 func _is_action_locked() -> bool:
 	return current_action_animation != &""

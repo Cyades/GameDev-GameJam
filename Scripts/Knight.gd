@@ -29,6 +29,7 @@ func _ready() -> void:
 	leader = get_tree().get_first_node_in_group("player") as Node2D
 	collision_layer = 0; collision_mask = 0
 	_configure_animation_loops()
+	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
 	_play_animation(&"idle")
@@ -37,7 +38,8 @@ func _ready() -> void:
 	action_timer.timeout.connect(_on_action_timer_timeout)
 	add_child(action_timer); action_timer.start()
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	var separation := CombatUtils.get_separation_force(self, get_tree()) if not is_dead else Vector2.ZERO
 	if is_dead or _is_action_locked():
 		velocity = Vector2.ZERO; move_and_slide(); return
 	if leader == null or not is_instance_valid(leader):
@@ -48,19 +50,27 @@ func _physics_process(_delta: float) -> void:
 	var threat := CombatUtils.find_enemy_near_player(global_position, get_tree(), 100.0)
 	if threat != null:
 		var to_threat := threat.global_position - global_position
-		if to_threat.length() > attack_range * 0.5:
+		var threat_dist := to_threat.length()
+		if threat_dist > attack_range:
+			# Too far — rush toward enemy
 			var dir := to_threat.normalized()
-			velocity = dir * move_speed * 1.4
-			if dir.x != 0.0: animated_sprite.flip_h = dir.x < 0.0
+			velocity = dir * move_speed * 1.4 + separation
+			if absf(dir.x) > 0.1: animated_sprite.flip_h = dir.x < 0.0
 			_play_animation(&"walk")
+			move_and_slide(); return
+		else:
+			# In attack range — stop and face enemy
+			velocity = separation
+			if absf(to_threat.x) > 4.0: animated_sprite.flip_h = to_threat.x < 0.0
+			_play_animation(&"idle")
 			move_and_slide(); return
 	var to := leader.global_position - global_position
 	if to.length() > follow_distance:
-		var d := to.normalized(); velocity = d * move_speed
-		if d.x != 0.0: animated_sprite.flip_h = d.x < 0.0
+		var d := to.normalized(); velocity = d * move_speed + separation
+		if absf(d.x) > 0.1: animated_sprite.flip_h = d.x < 0.0
 		_play_animation(&"walk")
 	else:
-		velocity = Vector2.ZERO; _play_animation(&"idle")
+		velocity = separation; _play_animation(&"idle")
 	move_and_slide()
 
 func _on_action_timer_timeout() -> void:
