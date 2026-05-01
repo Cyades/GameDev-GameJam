@@ -632,9 +632,9 @@ func _trigger_death() -> void:
 	if melee_window_timer != null:
 		melee_window_timer.stop()
 	if melee_hitbox != null:
-		melee_hitbox.monitoring = false
+		melee_hitbox.set_deferred("monitoring", false)
 	if player_hurtbox != null:
-		player_hurtbox.monitoring = false
+		player_hurtbox.set_deferred("monitoring", false)
 	if _arrow_node != null:
 		_arrow_node.visible = false
 	_trigger_action(&"death")

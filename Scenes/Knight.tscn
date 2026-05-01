@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://dqkalrh8do2x7"]
+[gd_scene format=3 uid="uid://dqkalrh8do2x7"]
 
 [ext_resource type="Texture2D" uid="uid://c0ch7sdpfufru" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Knight/Knight with shadows/Knight-Attack01.png" id="1_omj3b"]
 [ext_resource type="Texture2D" uid="uid://dy8sro1khww1k" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Knight/Knight with shadows/Knight-Attack02.png" id="2_timcb"]
@@ -8,11 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://8kxta725lr5e" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Knight/Knight with shadows/Knight-Hurt.png" id="6_04rgk"]
 [ext_resource type="Texture2D" uid="uid://dc1701n5114nx" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Knight/Knight with shadows/Knight-Idle.png" id="7_kjbd8"]
 [ext_resource type="Texture2D" uid="uid://dxx8rntkimgt2" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Knight/Knight with shadows/Knight-Walk.png" id="8_0ld3f"]
-[ext_resource type="Script" path="res://Scripts/Knight.gd" id="9_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_knight"]
-radius = 8.0
-height = 24.0
+[ext_resource type="Script" uid="uid://gpof1pnbuvqm" path="res://Scripts/Knight.gd" id="9_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4jv4l"]
 atlas = ExtResource("1_omj3b")
@@ -256,7 +252,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack01",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -291,7 +287,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack02",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -329,7 +325,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack03",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -435,16 +431,21 @@ animations = [{
 "speed": 7.0
 }]
 
-[node name="CharacterBody2D" type="CharacterBody2D" unique_id=2010484204]
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_knight"]
+radius = 8.0
+height = 24.0
+
+[node name="CharacterBody2D2" type="CharacterBody2D" unique_id=2010484204]
 script = ExtResource("9_script")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=617402527]
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_pefk6")
-animation = &"idle"
+animation = &"block"
+frame_progress = 0.10294442
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=159651234]
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_knight")
 
