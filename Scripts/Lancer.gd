@@ -116,32 +116,43 @@ func _on_action_timer_timeout() -> void:
 		return
 	current_attack_target = nearest
 	_face(nearest)
-	match attack_cycle % 3:
-		0:  # Quick jab — single target (no lunge)
-			lunge_dir = Vector2.ZERO
-			lunge_speed = 0.0
-			_play_action(&"attack01")
-			_dmg(nearest, attack01_damage)
-		1:  # Thrust — pierces + gradual lunge
-			lunge_dir = (nearest.global_position - global_position).normalized()
-			lunge_speed = 120.0
-			lunge_damage = attack02_damage
-			lunge_hit_enemies.clear()
-			_play_action(&"attack02")
-			var line_enemies := _find_enemies_in_line(nearest, pierce_range)
-			for e in line_enemies:
-				lunge_hit_enemies.append(e)
-				_dmg(e, attack02_damage)
-		2:  # Heavy lance — pierces + big lunge
-			lunge_dir = (nearest.global_position - global_position).normalized()
-			lunge_speed = 160.0
-			lunge_damage = attack03_damage
-			lunge_hit_enemies.clear()
-			_play_action(&"attack03")
-			var line_enemies := _find_enemies_in_line(nearest, pierce_range)
-			for e in line_enemies:
-				lunge_hit_enemies.append(e)
-				_dmg(e, attack03_damage)
+	var dir_to_enemy := (nearest.global_position - global_position).normalized()
+	# If enemy is too vertical, lunge would look odd — fall back to jab
+	var too_vertical := absf(dir_to_enemy.x) < 0.45
+	var cycle := attack_cycle % 3
+	if too_vertical and (cycle == 1 or cycle == 2):
+		# Fall back to attack01 (no lunge)
+		lunge_dir = Vector2.ZERO
+		lunge_speed = 0.0
+		_play_action(&"attack01")
+		_dmg(nearest, attack01_damage)
+	else:
+		match cycle:
+			0:  # Quick jab — single target (no lunge)
+				lunge_dir = Vector2.ZERO
+				lunge_speed = 0.0
+				_play_action(&"attack01")
+				_dmg(nearest, attack01_damage)
+			1:  # Thrust — pierces + gradual lunge
+				lunge_dir = dir_to_enemy
+				lunge_speed = 120.0
+				lunge_damage = attack02_damage
+				lunge_hit_enemies.clear()
+				_play_action(&"attack02")
+				var line_enemies := _find_enemies_in_line(nearest, pierce_range)
+				for e in line_enemies:
+					lunge_hit_enemies.append(e)
+					_dmg(e, attack02_damage)
+			2:  # Heavy lance — pierces + big lunge
+				lunge_dir = dir_to_enemy
+				lunge_speed = 160.0
+				lunge_damage = attack03_damage
+				lunge_hit_enemies.clear()
+				_play_action(&"attack03")
+				var line_enemies := _find_enemies_in_line(nearest, pierce_range)
+				for e in line_enemies:
+					lunge_hit_enemies.append(e)
+					_dmg(e, attack03_damage)
 	attack_cycle += 1
 
 func _find_enemies_in_line(target: Node2D, rng: float) -> Array[Node2D]:

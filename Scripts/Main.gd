@@ -98,9 +98,7 @@ func _ready() -> void:
 ## DEBUG: Spawn companions at start — REMOVE AFTER TESTING
 func _debug_spawn_all_companions() -> void:
 	var scenes: Array[String] = [
-		"res://Scenes/Lancer.tscn",
-		"res://Scenes/Lancer.tscn",
-		"res://Scenes/Lancer.tscn",
+		"res://Scenes/Wizard.tscn",
 	]
 	var angle_step := TAU / scenes.size()
 	for i in scenes.size():
@@ -275,7 +273,9 @@ func _create_timer_hud() -> void:
 func _update_timer_hud() -> void:
 	# Update timer — show remaining time
 	var remaining := maxf(game_duration - elapsed_time, 0.0)
+	@warning_ignore("integer_division")
 	var mins := int(remaining) / 60
+	@warning_ignore("integer_division")
 	var secs := int(remaining) % 60
 	if timer_label:
 		timer_label.text = "%02d:%02d" % [mins, secs]

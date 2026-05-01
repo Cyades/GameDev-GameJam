@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://cx6y4r3v2y1x0"]
 
 [ext_resource type="Script" path="res://Scripts/Arrow.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://dummy" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Arrow(Projectile)/Arrow01(32x32).png" id="2_texture"]
+[ext_resource type="Texture2D" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Arrow(Projectile)/Arrow01(32x32).png" id="2_texture"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_arrow"]
 size = Vector2(24, 8)

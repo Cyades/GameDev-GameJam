@@ -47,7 +47,7 @@ func _physics_process(_delta: float) -> void:
 	var to := target.global_position - global_position
 	# Enrage at low HP — move faster
 	var spd := move_speed
-	if health <= max_health / 2: spd = move_speed * 1.4
+	if health <= max_health / 2.0: spd = move_speed * 1.4
 	if to.length_squared() > 4.0:
 		var d := to.normalized(); velocity = d * spd
 		if d.x != 0.0: animated_sprite.flip_h = d.x < 0.0
@@ -60,7 +60,7 @@ func _on_attack_timer() -> void:
 	if target == null or not is_instance_valid(target) or target.get("is_dead") == true: return
 	if global_position.distance_to(target.global_position) > attack_range: return
 	# Enrage at low HP — boost damage
-	var bonus := 1 if health <= max_health / 2 else 0
+	var bonus := 1 if health <= max_health / 2.0 else 0
 	if attack_cycle % 2 == 0:
 		_play_action(&"attack01"); _dmg_target(attack01_damage + bonus)
 	else:
@@ -79,7 +79,8 @@ func take_damage(amount: int = 1) -> void:
 func get_contact_damage() -> int: return contact_damage
 
 func _play_death() -> void:
-	if is_dead: return; is_dead = true; velocity = Vector2.ZERO
+	if is_dead: return
+	is_dead = true; velocity = Vector2.ZERO
 	if attack_timer: attack_timer.stop()
 	if hurtbox: hurtbox.set_deferred("monitoring", false); hurtbox.set_deferred("monitorable", false)
 	if contact_hitbox: contact_hitbox.set_deferred("monitoring", false); contact_hitbox.set_deferred("monitorable", false)

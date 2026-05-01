@@ -491,7 +491,7 @@ func _create_exp_hud() -> void:
 	exp_canvas_layer.layer = 100
 	add_child(exp_canvas_layer)
 
-	var vp_size := get_viewport_rect().size
+	var _vp_size := get_viewport_rect().size
 
 	# EXP progress bar — full width at the top of the screen
 	exp_bar = ProgressBar.new()

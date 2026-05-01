@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://dhjp76m1xd51"]
+[gd_scene format=3 uid="uid://dhjp76m1xd51"]
 
 [ext_resource type="Texture2D" uid="uid://b6i7gisd7lic4" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Wizard/Wizard with shadows/Wizard-Attack01.png" id="1_jtn04"]
 [ext_resource type="Texture2D" uid="uid://c4rb3m11874uy" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Wizard/Wizard with shadows/Wizard-Attack02.png" id="2_p35uc"]
@@ -8,11 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://ckguffudls0q3" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Wizard/Wizard with shadows/Wizard-Hurt.png" id="4_sue8v"]
 [ext_resource type="Texture2D" uid="uid://b7l8wit1nenmi" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Wizard/Wizard with shadows/Wizard-Idle.png" id="5_ny8sk"]
 [ext_resource type="Texture2D" uid="uid://ccyd5mrgxwdd8" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Wizard/Wizard with shadows/Wizard-Walk.png" id="6_a0p8m"]
-[ext_resource type="Script" path="res://Scripts/Wizard.gd" id="7_script"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wizard"]
-radius = 8.0
-height = 24.0
+[ext_resource type="Script" uid="uid://cxeo8mawa4a7a" path="res://Scripts/Wizard.gd" id="7_script"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2hok3"]
 atlas = ExtResource("1_jtn04")
@@ -276,7 +272,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"attack01 effect",
-"speed": 5.0
+"speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -414,6 +410,10 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wizard"]
+radius = 8.0
+height = 24.0
+
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=1625173762]
 script = ExtResource("7_script")
 
@@ -421,9 +421,10 @@ script = ExtResource("7_script")
 texture_filter = 1
 position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_xd4ac")
-animation = &"idle"
+animation = &"attack01 effect"
+frame_progress = 0.93509924
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=294301360]
 texture_filter = 1
 position = Vector2(0, 4)
 shape = SubResource("CapsuleShape2D_wizard")

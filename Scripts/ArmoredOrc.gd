@@ -77,7 +77,8 @@ func take_damage(amount: int = 1) -> void:
 func get_contact_damage() -> int: return contact_damage
 
 func _play_death() -> void:
-	if is_dead: return; is_dead = true; velocity = Vector2.ZERO
+	if is_dead: return
+	is_dead = true; velocity = Vector2.ZERO
 	if attack_timer: attack_timer.stop()
 	if hurtbox: hurtbox.set_deferred("monitoring", false); hurtbox.set_deferred("monitorable", false)
 	if contact_hitbox: contact_hitbox.set_deferred("monitoring", false); contact_hitbox.set_deferred("monitorable", false)

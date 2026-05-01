@@ -60,7 +60,7 @@ func _ready() -> void:
 
 # ─── Physics ──────────────────────────────────────────────────────────────────
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	var separation := CombatUtils.get_separation_force(self, get_tree()) if not is_dead else Vector2.ZERO
 	if is_dead or _is_action_locked():
 		velocity = Vector2.ZERO
@@ -187,12 +187,12 @@ func _spawn_projectile(enemy: Node2D) -> void:
 		projectile.play(anim_name)
 
 	# Move the projectile via a script-like approach using a timer + process
-	var target_pos := enemy.global_position
+	var _target_pos := enemy.global_position
 	var dmg := attack02_damage
 	var spd := projectile_speed
 	var tree_ref := get_tree()
 	var max_dist := attack_range * 1.5
-	var traveled := 0.0
+	var _traveled := 0.0
 
 	projectile.set_meta("dir", dir)
 	projectile.set_meta("spd", spd)

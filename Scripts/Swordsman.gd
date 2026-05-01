@@ -135,7 +135,8 @@ func receive_heal(amount: int) -> void:
 func get_contact_damage() -> int: return 0
 
 func _trigger_death() -> void:
-	if is_dead: return; is_dead = true; velocity = Vector2.ZERO
+	if is_dead: return
+	is_dead = true; velocity = Vector2.ZERO
 	if action_timer: action_timer.stop()
 	_play_action(&"death")
 
