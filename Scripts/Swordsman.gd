@@ -25,6 +25,7 @@ var is_dead: bool = false
 var current_action_animation: StringName = &""
 var action_timer: Timer
 var leader: Node2D
+var current_attack_target: Node2D = null
 var attack_cycle: int = 0
 var dash_target_pos: Vector2 = Vector2.ZERO
 var is_dashing: bool = false
@@ -78,9 +79,10 @@ func _physics_process(delta: float) -> void:
 			if absf(to_threat.x) > 4.0: animated_sprite.flip_h = to_threat.x < 0.0
 			_play_animation(&"idle")
 			move_and_slide(); return
-	var to_leader := leader.global_position - global_position
-	if to_leader.length() > follow_distance:
-		var dir := to_leader.normalized()
+	var formation_pos := CombatUtils.get_formation_position(self, get_tree())
+	var to_formation := formation_pos - global_position
+	if to_formation.length() > follow_distance:
+		var dir := to_formation.normalized()
 		velocity = dir * move_speed + separation
 		if absf(dir.x) > 0.1: animated_sprite.flip_h = dir.x < 0.0
 		_play_animation(&"walk")
@@ -92,6 +94,7 @@ func _on_action_timer_timeout() -> void:
 	if is_dead or _is_action_locked(): return
 	var enemy := _find_nearest_enemy()
 	if enemy == null: return
+	current_attack_target = enemy
 	_face(enemy)
 	var dist := global_position.distance_to(enemy.global_position)
 	match attack_cycle % 3:
@@ -115,7 +118,7 @@ func _damage_enemy(enemy: Node2D, dmg: int) -> void:
 	if enemy.has_method("take_damage"): enemy.call("take_damage", dmg)
 
 func _find_nearest_enemy() -> Node2D:
-	return CombatUtils.find_enemy_near_player(global_position, get_tree(), dash_range)
+	return CombatUtils.find_distributed_enemy_near_player(self, get_tree(), dash_range)
 
 func _face(t: Node2D) -> void:
 	animated_sprite.flip_h = t.global_position.x < global_position.x

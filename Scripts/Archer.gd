@@ -24,6 +24,7 @@ var leader: Node2D
 var attack_toggle: bool = false  # alternate attack01 / attack02
 var attack_direction: Vector2 = Vector2.RIGHT
 var pending_arrow_spawn: bool = false  # spawn arrow at end of attack anim
+var current_attack_target: Node2D = null  # for distributed targeting
 
 # ─── Ready ────────────────────────────────────────────────────────────────────
 
@@ -93,7 +94,8 @@ func _physics_process(delta: float) -> void:
 			move_and_slide()
 			return
 
-	var to_leader := leader.global_position - global_position
+	var formation_pos := CombatUtils.get_formation_position(self, get_tree())
+	var to_leader := formation_pos - global_position
 	if to_leader.length() > follow_distance:
 		var dir := to_leader.normalized()
 		velocity = dir * move_speed + separation
@@ -123,6 +125,7 @@ func _on_action_timer_timeout() -> void:
 	var enemy := _find_nearest_enemy()
 	if enemy == null:
 		return
+	current_attack_target = enemy
 
 	# Calculate free-aim direction towards enemy
 	var to_enemy := enemy.global_position - global_position
@@ -165,7 +168,7 @@ func _spawn_arrow() -> void:
 # ─── Target finding ──────────────────────────────────────────────────────────
 
 func _find_nearest_enemy() -> Node2D:
-	return CombatUtils.find_enemy_near_player(global_position, get_tree(), attack_range)
+	return CombatUtils.find_distributed_enemy_near_player(self, get_tree(), attack_range)
 
 # ─── Damage receiving ────────────────────────────────────────────────────────
 

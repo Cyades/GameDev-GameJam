@@ -21,7 +21,12 @@ var is_dead: bool = false
 var current_action_animation: StringName = &""
 var action_timer: Timer
 var leader: Node2D
+var current_attack_target: Node2D = null
 var attack_cycle: int = 0
+var lunge_dir: Vector2 = Vector2.ZERO  # direction of lunge
+var lunge_speed: float = 0.0  # pixels per second during lunge
+var lunge_damage: int = 0  # damage dealt to enemies passed through
+var lunge_hit_enemies: Array = []  # enemies already hit this lunge
 
 func _ready() -> void:
 	if not is_in_group("companion"):
@@ -36,6 +41,8 @@ func _ready() -> void:
 	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
+	if not animated_sprite.frame_changed.is_connected(_on_frame_changed):
+		animated_sprite.frame_changed.connect(_on_frame_changed)
 	_play_animation(&"idle")
 	action_timer = Timer.new()
 	action_timer.wait_time = action_interval
@@ -47,6 +54,17 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	var separation := CombatUtils.get_separation_force(self, get_tree()) if not is_dead else Vector2.ZERO
 	if is_dead or _is_action_locked():
+		# Apply lunge during action lock (attack animation)
+		if lunge_dir != Vector2.ZERO and lunge_speed > 0.0:
+			global_position += lunge_dir * lunge_speed * delta
+			# Damage enemies we pass through
+			for e in get_tree().get_nodes_in_group("enemy"):
+				if not is_instance_valid(e) or not e is Node2D: continue
+				if e.get("is_dead") == true: continue
+				if e in lunge_hit_enemies: continue
+				if global_position.distance_to((e as Node2D).global_position) < 20.0:
+					lunge_hit_enemies.append(e)
+					_dmg(e as Node2D, lunge_damage)
 		velocity = Vector2.ZERO
 		move_and_slide()
 		return
@@ -77,7 +95,8 @@ func _physics_process(delta: float) -> void:
 			_play_animation(&"idle")
 			move_and_slide()
 			return
-	var to := leader.global_position - global_position
+	var formation_pos := CombatUtils.get_formation_position(self, get_tree())
+	var to := formation_pos - global_position
 	if to.length() > follow_distance:
 		var d := to.normalized()
 		velocity = d * move_speed + separation
@@ -95,20 +114,33 @@ func _on_action_timer_timeout() -> void:
 	var nearest := _find_nearest(attack_range)
 	if nearest == null:
 		return
+	current_attack_target = nearest
 	_face(nearest)
 	match attack_cycle % 3:
-		0:  # Quick jab — single target
+		0:  # Quick jab — single target (no lunge)
+			lunge_dir = Vector2.ZERO
+			lunge_speed = 0.0
 			_play_action(&"attack01")
 			_dmg(nearest, attack01_damage)
-		1:  # Thrust — pierces enemies in a line
+		1:  # Thrust — pierces + gradual lunge
+			lunge_dir = (nearest.global_position - global_position).normalized()
+			lunge_speed = 120.0
+			lunge_damage = attack02_damage
+			lunge_hit_enemies.clear()
 			_play_action(&"attack02")
 			var line_enemies := _find_enemies_in_line(nearest, pierce_range)
 			for e in line_enemies:
+				lunge_hit_enemies.append(e)
 				_dmg(e, attack02_damage)
-		2:  # Heavy lance — pierces ALL in line, high damage
+		2:  # Heavy lance — pierces + big lunge
+			lunge_dir = (nearest.global_position - global_position).normalized()
+			lunge_speed = 160.0
+			lunge_damage = attack03_damage
+			lunge_hit_enemies.clear()
 			_play_action(&"attack03")
 			var line_enemies := _find_enemies_in_line(nearest, pierce_range)
 			for e in line_enemies:
+				lunge_hit_enemies.append(e)
 				_dmg(e, attack03_damage)
 	attack_cycle += 1
 
@@ -132,7 +164,7 @@ func _find_enemies_in_line(target: Node2D, rng: float) -> Array[Node2D]:
 	return result
 
 func _find_nearest(rng: float) -> Node2D:
-	return CombatUtils.find_enemy_near_player(global_position, get_tree(), rng)
+	return CombatUtils.find_distributed_enemy_near_player(self, get_tree(), rng)
 
 func _dmg(e: Node2D, d: int) -> void:
 	if e.has_method("take_damage"):
@@ -173,6 +205,9 @@ func _play_action(a: StringName) -> void:
 		return
 	current_action_animation = a
 	velocity = Vector2.ZERO
+	# Keep lunge attack anim at normal speed — movement is the speed
+	if a == &"attack02" or a == &"attack03":
+		animated_sprite.speed_scale = 1.5
 	_play_animation(a)
 
 func _on_animation_finished() -> void:
@@ -181,6 +216,12 @@ func _on_animation_finished() -> void:
 		return
 	if animated_sprite.animation == current_action_animation:
 		current_action_animation = &""
+		lunge_dir = Vector2.ZERO
+		lunge_speed = 0.0
+		animated_sprite.speed_scale = 1.5  # restore base speed
+
+func _on_frame_changed() -> void:
+	pass  # lunge handled in _physics_process for smooth movement
 
 func _is_action_locked() -> bool:
 	return current_action_animation != &""

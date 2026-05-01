@@ -26,6 +26,7 @@ var action_timer: Timer
 var leader: Node2D
 var attack_toggle: bool = false  # alternates between attack01 and attack02
 var pending_projectile_target: Node2D = null  # deferred projectile spawn
+var current_attack_target: Node2D = null  # for distributed targeting
 
 # ─── Ready ────────────────────────────────────────────────────────────────────
 
@@ -95,7 +96,8 @@ func _physics_process(delta: float) -> void:
 			move_and_slide()
 			return
 
-	var to_leader := leader.global_position - global_position
+	var formation_pos := CombatUtils.get_formation_position(self, get_tree())
+	var to_leader := formation_pos - global_position
 	if to_leader.length() > follow_distance:
 		var dir := to_leader.normalized()
 		velocity = dir * move_speed + separation
@@ -117,6 +119,7 @@ func _on_action_timer_timeout() -> void:
 	var enemy := _find_nearest_enemy()
 	if enemy == null:
 		return
+	current_attack_target = enemy
 
 	# Alternate between attack01 and attack02
 	if attack_toggle:
@@ -240,7 +243,7 @@ func _face_target(target: Node2D) -> void:
 		animated_sprite.flip_h = false
 
 func _find_nearest_enemy() -> Node2D:
-	return CombatUtils.find_enemy_near_player(global_position, get_tree(), attack_range)
+	return CombatUtils.find_distributed_enemy_near_player(self, get_tree(), attack_range)
 
 # ─── Damage receiving ────────────────────────────────────────────────────────
 

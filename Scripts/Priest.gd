@@ -26,6 +26,8 @@ var is_dead: bool = false
 var current_action_animation: StringName = &""
 var action_timer: Timer
 var leader: Node2D  # the player we follow
+var pending_attack_target: Node2D = null  # deferred attack effect
+var current_attack_target: Node2D = null  # for distributed targeting
 
 # ─── Ready ────────────────────────────────────────────────────────────────────
 
@@ -46,6 +48,8 @@ func _ready() -> void:
 	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):
 		animated_sprite.animation_finished.connect(_on_animation_finished)
+	if not animated_sprite.frame_changed.is_connected(_on_frame_changed):
+		animated_sprite.frame_changed.connect(_on_frame_changed)
 	_play_animation(&"idle")
 
 	# Repeating timer that triggers attack or heal
@@ -96,7 +100,8 @@ func _physics_process(delta: float) -> void:
 			move_and_slide()
 			return
 
-	var to_leader := leader.global_position - global_position
+	var formation_pos := CombatUtils.get_formation_position(self, get_tree())
+	var to_leader := formation_pos - global_position
 	if to_leader.length() > follow_distance:
 		var dir := to_leader.normalized()
 		velocity = dir * move_speed + separation
@@ -122,6 +127,7 @@ func _on_action_timer_timeout() -> void:
 	else:
 		var enemy := _find_nearest_enemy()
 		if enemy != null:
+			current_attack_target = enemy
 			_do_attack(enemy)
 
 # ─── Attack ───────────────────────────────────────────────────────────────────
@@ -134,11 +140,7 @@ func _do_attack(enemy: Node2D) -> void:
 		animated_sprite.flip_h = false
 
 	_play_action(&"attack01")
-	_spawn_effect_on_target(enemy, &"attack01 effect")
-
-	# Apply damage
-	if enemy.has_method("take_damage"):
-		enemy.call("take_damage", attack_damage)
+	pending_attack_target = enemy  # Effect + damage on 2nd-to-last frame
 
 # ─── Heal ─────────────────────────────────────────────────────────────────────
 
@@ -185,7 +187,7 @@ func _spawn_effect_on_target(target: Node2D, anim_name: StringName) -> void:
 # ─── Target finding helpers ──────────────────────────────────────────────────
 
 func _find_nearest_enemy() -> Node2D:
-	return CombatUtils.find_enemy_near_player(global_position, get_tree(), attack_range)
+	return CombatUtils.find_distributed_enemy_near_player(self, get_tree(), attack_range)
 
 func _find_lowest_hp_ally() -> Node2D:
 	# Check player and all companions — find the one with lowest HP ratio
@@ -266,6 +268,20 @@ func _on_animation_finished() -> void:
 		return
 	if animated_sprite.animation == current_action_animation:
 		current_action_animation = &""
+
+func _on_frame_changed() -> void:
+	# Spawn attack effect on 2nd-to-last frame of attack01
+	if pending_attack_target == null: return
+	if animated_sprite.animation != &"attack01": return
+	var frames := animated_sprite.sprite_frames
+	if frames == null: return
+	var total_frames := frames.get_frame_count(&"attack01")
+	if animated_sprite.frame >= total_frames - 2:
+		if is_instance_valid(pending_attack_target):
+			_spawn_effect_on_target(pending_attack_target, &"attack01 effect")
+			if pending_attack_target.has_method("take_damage"):
+				pending_attack_target.call("take_damage", attack_damage)
+		pending_attack_target = null
 
 func _is_action_locked() -> bool:
 	return current_action_animation != &""

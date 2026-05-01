@@ -24,6 +24,7 @@ var is_dead: bool = false
 var current_action_animation: StringName = &""
 var action_timer: Timer
 var leader: Node2D
+var current_attack_target: Node2D = null
 var attack_cycle: int = 0
 
 func _ready() -> void:
@@ -78,7 +79,8 @@ func _physics_process(delta: float) -> void:
 			_play_animation(&"idle")
 			move_and_slide()
 			return
-	var to := leader.global_position - global_position
+	var formation_pos := CombatUtils.get_formation_position(self, get_tree())
+	var to := formation_pos - global_position
 	if to.length() > follow_distance:
 		var d := to.normalized()
 		velocity = d * move_speed + separation
@@ -97,6 +99,7 @@ func _on_action_timer_timeout() -> void:
 		0:
 			var e := _find_nearest(attack_range)
 			if e:
+				current_attack_target = e
 				_face(e)
 				_play_action(&"attack01")
 				_dmg(e, attack01_damage)
@@ -139,7 +142,7 @@ func _apply_burn(enemy: Node2D) -> void:
 	bt.start()
 
 func _find_nearest(rng: float) -> Node2D:
-	return CombatUtils.find_enemy_near_player(global_position, get_tree(), rng)
+	return CombatUtils.find_distributed_enemy_near_player(self, get_tree(), rng)
 
 func _find_all_in_range(rng: float) -> Array[Node2D]:
 	var player_pos := global_position

@@ -21,6 +21,7 @@ const ACTION_ANIMATIONS: Array[StringName] = [&"attack01", &"attack02", &"attack
 var health: int = 0; var is_dead: bool = false
 var current_action_animation: StringName = &""
 var action_timer: Timer; var leader: Node2D; var attack_cycle: int = 0
+var current_attack_target: Node2D = null
 
 func _ready() -> void:
 	if not is_in_group("companion"): add_to_group("companion")
@@ -64,7 +65,8 @@ func _physics_process(delta: float) -> void:
 			if absf(to_threat.x) > 4.0: animated_sprite.flip_h = to_threat.x < 0.0
 			_play_animation(&"idle")
 			move_and_slide(); return
-	var to := leader.global_position - global_position
+	var formation_pos := CombatUtils.get_formation_position(self, get_tree())
+	var to := formation_pos - global_position
 	if to.length() > follow_distance:
 		var d := to.normalized(); velocity = d * move_speed + separation
 		if absf(d.x) > 0.1: animated_sprite.flip_h = d.x < 0.0
@@ -78,7 +80,7 @@ func _on_action_timer_timeout() -> void:
 	match attack_cycle % 4:
 		0:  # Shield bash — single target
 			var e := _find_nearest(attack_range)
-			if e: _face(e); _play_action(&"attack01"); _dmg(e, attack01_damage)
+			if e: current_attack_target = e; _face(e); _play_action(&"attack01"); _dmg(e, attack01_damage)
 		1:  # Sweep — hit ALL enemies in aoe_range
 			var enemies := _find_all_in_range(aoe_range)
 			if enemies.size() > 0:
@@ -92,7 +94,7 @@ func _on_action_timer_timeout() -> void:
 	attack_cycle += 1
 
 func _find_nearest(rng: float) -> Node2D:
-	return CombatUtils.find_enemy_near_player(global_position, get_tree(), rng)
+	return CombatUtils.find_distributed_enemy_near_player(self, get_tree(), rng)
 
 func _find_all_in_range(rng: float) -> Array[Node2D]:
 	# Find the player

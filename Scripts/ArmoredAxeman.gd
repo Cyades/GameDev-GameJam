@@ -21,6 +21,7 @@ var is_dead: bool = false
 var current_action_animation: StringName = &""
 var action_timer: Timer
 var leader: Node2D
+var current_attack_target: Node2D = null
 var attack_cycle: int = 0
 
 func _ready() -> void:
@@ -79,7 +80,8 @@ func _physics_process(delta: float) -> void:
 			_play_animation(&"idle")
 			move_and_slide()
 			return
-	var to := leader.global_position - global_position
+	var formation_pos := CombatUtils.get_formation_position(self, get_tree())
+	var to := formation_pos - global_position
 	if to.length() > follow_distance:
 		var d := to.normalized()
 		velocity = d * move_speed
@@ -97,6 +99,7 @@ func _on_action_timer_timeout() -> void:
 	var enemy := _find_nearest(attack_range)
 	if enemy == null:
 		return
+	current_attack_target = enemy
 	_face(enemy)
 	match attack_cycle % 3:
 		0:  # Light chop — small knockback
@@ -121,7 +124,7 @@ func _knockback(enemy: Node2D, force: float) -> void:
 		enemy.velocity = dir * force
 
 func _find_nearest(rng: float) -> Node2D:
-	return CombatUtils.find_enemy_near_player(global_position, get_tree(), rng)
+	return CombatUtils.find_distributed_enemy_near_player(self, get_tree(), rng)
 
 func _dmg(e: Node2D, d: int) -> void:
 	if e.has_method("take_damage"):
