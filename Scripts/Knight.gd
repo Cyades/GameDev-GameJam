@@ -59,7 +59,7 @@ func _physics_process(_delta: float) -> void:
 		if threat_dist > attack_range:
 			# Too far — rush toward enemy
 			var dir := to_threat.normalized()
-			velocity = dir * move_speed * 1.4 + separation
+			velocity = dir * move_speed + separation
 			if absf(dir.x) > 0.1: animated_sprite.flip_h = dir.x < 0.0
 			_play_animation(&"walk")
 			move_and_slide(); return

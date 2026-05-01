@@ -71,7 +71,7 @@ func _physics_process(delta: float) -> void:
 		var threat_dist := to_threat.length()
 		if threat_dist > attack_range:
 			var dir := to_threat.normalized()
-			velocity = dir * move_speed * 1.4
+			velocity = dir * move_speed
 			if absf(dir.x) > 0.1:
 				animated_sprite.flip_h = dir.x < 0.0
 			_play_animation(&"walk")

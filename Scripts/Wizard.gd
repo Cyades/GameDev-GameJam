@@ -9,6 +9,7 @@ extends CharacterBody2D
 @export var attack_range: float = 90.0
 @export var action_interval: float = 2.0
 @export var projectile_speed: float = 200.0
+@export var knockback_force: float = 400.0
 
 ## ── Collision layers ─────────────────────────────────────────────────────────
 const LAYER_PLAYER_HURTBOX: int = 1 << 1
@@ -82,7 +83,7 @@ func _physics_process(_delta: float) -> void:
 		var threat_dist := to_threat.length()
 		if threat_dist > attack_range:
 			var dir := to_threat.normalized()
-			velocity = dir * move_speed * 1.3 + separation
+			velocity = dir * move_speed + separation
 			if absf(dir.x) > 0.1:
 				animated_sprite.flip_h = dir.x < 0.0
 			_play_animation(&"walk")
@@ -199,32 +200,38 @@ func _spawn_projectile(enemy: Node2D) -> void:
 	projectile.set_meta("dmg", dmg)
 	projectile.set_meta("traveled", 0.0)
 	projectile.set_meta("max_dist", max_dist)
-	projectile.set_meta("hit", false)
+	projectile.set_meta("hit_targets", [])
+	projectile.set_meta("kb", knockback_force)
 
 	# Use a process callback to move the projectile
 	var callable := func(delta: float) -> void:
 		if not is_instance_valid(projectile): return
-		if projectile.get_meta("hit"): return
 		var d: Vector2 = projectile.get_meta("dir")
 		var s: float = projectile.get_meta("spd")
 		var t: float = projectile.get_meta("traveled")
 		var md: float = projectile.get_meta("max_dist")
+		var hit_targets: Array = projectile.get_meta("hit_targets")
+		var kb: float = projectile.get_meta("kb")
+		
 		projectile.global_position += d * s * delta
 		t += s * delta
 		projectile.set_meta("traveled", t)
 		if t >= md:
 			projectile.queue_free()
 			return
+		
 		# Check hit against enemies
 		for e in tree_ref.get_nodes_in_group("enemy"):
 			if not is_instance_valid(e) or not e is Node2D: continue
 			if e.get("is_dead") == true: continue
+			if e in hit_targets: continue
+			
 			if projectile.global_position.distance_to((e as Node2D).global_position) < 16.0:
 				if e.has_method("take_damage"):
 					e.call("take_damage", projectile.get_meta("dmg"))
-				projectile.set_meta("hit", true)
-				projectile.queue_free()
-				return
+				if e is CharacterBody2D:
+					(e as CharacterBody2D).velocity += d * kb
+				hit_targets.append(e)
 
 	# Connect to the tree's process_frame signal for movement
 	var timer := Timer.new()
