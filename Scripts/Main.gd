@@ -14,7 +14,8 @@ const ELITE_ORC      := preload("res://Scenes/EliteOrc.tscn")
 const ARMORED_SKELETON := preload("res://Scenes/ArmoredSkeleton.tscn")
 const WEREWOLF       := preload("res://Scenes/Werewolf.tscn")
 const BOSS1_SCENE    := preload("res://Scenes/GreatswordSkeleton.tscn")
-const BOSS2_SCENE    := preload("res://Scenes/Werebear.tscn")
+const BOSS2_SCENE    := preload("res://Scenes/EliteOrc.tscn")
+const BOSS3_SCENE    := preload("res://Scenes/Werebear.tscn")
 
 # ═══════════════════════════════════════════════════════════════════
 # WAVE CONFIG — 15 phases (1 per minute)
@@ -22,35 +23,35 @@ const BOSS2_SCENE    := preload("res://Scenes/Werebear.tscn")
 # ═══════════════════════════════════════════════════════════════════
 var wave_config: Array = [
 	# Min 0-1: Easy start — Slimes only
-	{ "interval": 1.2, "pool": [SLIME, SLIME, SLIME], "max": 10 },
+	{ "interval": 1.2, "pool": [SLIME, SLIME, SLIME] },
 	# Min 1-2: Skeletons join
-	{ "interval": 1.1, "pool": [SLIME, SLIME, SKELETON], "max": 12 },
+	{ "interval": 1.1, "pool": [SLIME, SLIME, SKELETON] },
 	# Min 2-3: Orcs enter
-	{ "interval": 1.0, "pool": [SLIME, SKELETON, ORC], "max": 14 },
+	{ "interval": 1.0, "pool": [SLIME, SKELETON, ORC] },
 	# Min 3-4: Ranged threat
-	{ "interval": 0.9, "pool": [SKELETON, ORC, SKELETON_ARCHER], "max": 16 },
-	# Min 4-5: Mixed horde
-	{ "interval": 0.85, "pool": [SKELETON, ORC, SKELETON_ARCHER, ORC, ARMORED_SKELETON], "max": 18 },
-	# Min 5-6: Orc Riders appear
-	{ "interval": 0.8, "pool": [ORC, SKELETON_ARCHER, ORC_RIDER, ARMORED_SKELETON], "max": 20 },
+	{ "interval": 0.9, "pool": [SKELETON, ORC, SKELETON_ARCHER] },
+	# Min 4-5: Pre-boss 1
+	{ "interval": 0.85, "pool": [SKELETON, ORC, SKELETON_ARCHER, ORC, ARMORED_SKELETON] },
+	# Min 5-6: BOSS 1 spawned, lighter horde
+	{ "interval": 1.0, "pool": [ORC, SKELETON_ARCHER, ORC_RIDER, ARMORED_SKELETON] },
 	# Min 6-7: Armored Orcs
-	{ "interval": 0.75, "pool": [ORC, ORC_RIDER, ARMORED_ORC, SKELETON_ARCHER, ARMORED_SKELETON], "max": 22 },
-	# Min 7-8: Pre-boss — intense  (BOSS at end of min 8)
-	{ "interval": 0.7, "pool": [ORC_RIDER, ARMORED_ORC, SKELETON_ARCHER, ELITE_ORC, ARMORED_SKELETON], "max": 24 },
-	# Min 8-9: BOSS 1 spawned, lighter horde
-	{ "interval": 1.0, "pool": [SKELETON, ORC, SKELETON_ARCHER], "max": 15 },
-	# Min 9-10: Post-boss recovery
-	{ "interval": 0.9, "pool": [ORC, ORC_RIDER, ARMORED_ORC], "max": 18 },
-	# Min 10-11: Elite horde
-	{ "interval": 0.8, "pool": [ORC_RIDER, ARMORED_ORC, ELITE_ORC], "max": 22 },
+	{ "interval": 0.75, "pool": [ORC, ORC_RIDER, ARMORED_ORC, SKELETON_ARCHER, ARMORED_SKELETON] },
+	# Min 7-8: Intense
+	{ "interval": 0.7, "pool": [ORC_RIDER, ARMORED_ORC, SKELETON_ARCHER, ARMORED_SKELETON] },
+	# Min 8-9: Recover
+	{ "interval": 0.9, "pool": [SKELETON, ORC, SKELETON_ARCHER] },
+	# Min 9-10: Pre-boss 2
+	{ "interval": 0.7, "pool": [ORC, ORC_RIDER, ARMORED_ORC] },
+	# Min 10-11: BOSS 2 spawned, lighter horde
+	{ "interval": 1.0, "pool": [ORC_RIDER, ARMORED_ORC] },
 	# Min 11-12: Werewolves appear
-	{ "interval": 0.7, "pool": [ELITE_ORC, WEREWOLF, ARMORED_ORC], "max": 24 },
+	{ "interval": 0.7, "pool": [WEREWOLF, ARMORED_ORC, ARMORED_SKELETON] },
 	# Min 12-13: Full horde
-	{ "interval": 0.65, "pool": [ELITE_ORC, WEREWOLF, ORC_RIDER, ARMORED_ORC], "max": 26 },
+	{ "interval": 0.65, "pool": [WEREWOLF, ORC_RIDER, ARMORED_ORC] },
 	# Min 13-14: Pre-final boss — maximum intensity
-	{ "interval": 0.6, "pool": [ELITE_ORC, WEREWOLF, WEREWOLF, ARMORED_ORC], "max": 28 },
+	{ "interval": 0.6, "pool": [WEREWOLF, WEREWOLF, ARMORED_ORC, ORC_RIDER] },
 	# Min 14-15: FINAL BOSS — lighter horde
-	{ "interval": 0.9, "pool": [WEREWOLF, ELITE_ORC], "max": 16 },
+	{ "interval": 0.9, "pool": [WEREWOLF, ARMORED_ORC] },
 ]
 
 @export var spawn_margin: float = 64.0
@@ -66,8 +67,10 @@ var elapsed_time: float = 0.0
 var current_wave: int = 0
 var boss1_spawned: bool = false
 var boss2_spawned: bool = false
+var boss3_spawned: bool = false
 var boss1_alive: bool = false
 var boss2_alive: bool = false
+var boss3_alive: bool = false
 var game_won: bool = false
 var kill_count: int = 0
 
@@ -111,15 +114,20 @@ func _process(delta: float) -> void:
 		current_wave = minute
 		_apply_wave(current_wave)
 	
-	# BOSS 1 — spawn at minute 8 (480s)
-	if not boss1_spawned and elapsed_time >= 480.0:
+	# BOSS 1 — spawn at minute 5 (300s)
+	if not boss1_spawned and elapsed_time >= 300.0:
 		boss1_spawned = true; boss1_alive = true
-		_spawn_boss(BOSS1_SCENE, true)
-	
-	# BOSS 2 — spawn at minute 15 (900s)
-	if not boss2_spawned and elapsed_time >= 900.0:
+		_spawn_boss(BOSS1_SCENE, 1)
+		
+	# BOSS 2 — spawn at minute 10 (600s)
+	if not boss2_spawned and elapsed_time >= 600.0:
 		boss2_spawned = true; boss2_alive = true
-		_spawn_boss(BOSS2_SCENE, false)
+		_spawn_boss(BOSS2_SCENE, 2)
+	
+	# BOSS 3 — spawn at minute 15 (900s)
+	if not boss3_spawned and elapsed_time >= 900.0:
+		boss3_spawned = true; boss3_alive = true
+		_spawn_boss(BOSS3_SCENE, 3)
 
 func _apply_wave(wave_idx: int) -> void:
 	if wave_idx < 0 or wave_idx >= wave_config.size(): return
@@ -152,18 +160,27 @@ func _on_enemy_spawn_timer_timeout() -> void:
 func _on_enemy_killed() -> void:
 	kill_count += 1
 
-func _spawn_boss(boss_scene: PackedScene, is_first_boss: bool) -> void:
+func _spawn_boss(boss_scene: PackedScene, boss_index: int) -> void:
 	var boss := boss_scene.instantiate() as Node2D
 	if boss == null: return
+	
+	if boss_index == 2:
+		boss.add_to_group("boss")
+		boss.scale = Vector2(2.0, 2.0)
+		if boss.get("max_health") != null:
+			boss.set("max_health", boss.get("max_health") * 15)
+			
 	boss.global_position = _get_spawn_position_outside_camera()
 	enemy_container.add_child(boss)
 	
 	# Connect boss_defeated signal
 	if boss.has_signal("boss_defeated"):
-		if is_first_boss:
+		if boss_index == 1:
 			boss.boss_defeated.connect(_on_boss1_defeated)
-		else:
+		elif boss_index == 2:
 			boss.boss_defeated.connect(_on_boss2_defeated)
+		elif boss_index == 3:
+			boss.boss_defeated.connect(_on_boss3_defeated)
 
 func _on_boss1_defeated() -> void:
 	boss1_alive = false
@@ -171,6 +188,10 @@ func _on_boss1_defeated() -> void:
 
 func _on_boss2_defeated() -> void:
 	boss2_alive = false
+	print("[BOSS] Elite Orc defeated!")
+
+func _on_boss3_defeated() -> void:
+	boss3_alive = false
 	game_won = true
 	print("[GAME] YOU WIN! Werebear defeated!")
 	# TODO: Show victory screen

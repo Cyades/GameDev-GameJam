@@ -26,6 +26,8 @@ var hurtbox: Area2D; var contact_hitbox: Area2D
 var attack_timer: Timer; var attack_cycle: int = 0
 var swing_damage: int = 0; var swing_hit_targets: Array = []
 
+signal boss_defeated
+
 func _ready() -> void:
 	if not is_in_group("enemy"): add_to_group("enemy")
 	collision_layer = 0; collision_mask = 0; health = max_health
@@ -102,7 +104,11 @@ func _play_action(a: StringName) -> void:
 	current_action_animation = a; velocity = Vector2.ZERO; _play_animation(a)
 func _on_animation_finished() -> void:
 	if animated_sprite.animation == &"death":
-		ExpGemScript.drop_gems(self, 2, randi_range(2, 3))  # Strong tier, 2-3 gems
+		if is_in_group("boss"):
+			boss_defeated.emit()
+			ExpGemScript.drop_gems(self, 3, 5) # Boss tier
+		else:
+			ExpGemScript.drop_gems(self, 2, randi_range(2, 3))  # Strong tier, 2-3 gems
 		queue_free(); return
 	if animated_sprite.animation == current_action_animation:
 		current_action_animation = &""
