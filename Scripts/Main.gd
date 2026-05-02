@@ -274,7 +274,7 @@ func _spawn_boss(boss_scene: PackedScene, boss_index: int) -> void:
 		boss.add_to_group("boss")
 		boss.scale = Vector2(2.0, 2.0)
 		if boss.get("max_health") != null:
-			boss.set("max_health", boss.get("max_health") * 15)
+			boss.set("max_health", 1500)
 			
 	boss.global_position = _get_spawn_position_outside_camera()
 	enemy_container.add_child(boss)
@@ -435,7 +435,10 @@ func _update_timer_hud() -> void:
 		elif boss1_alive and not boss2_spawned:
 			boss_warning_label.text = "⚔ GREATSWORD SKELETON ⚔"
 			boss_warning_label.visible = true
-		elif boss2_alive:
+		elif boss2_alive and not boss3_spawned:
+			boss_warning_label.text = "⚔ ELITE ORC ⚔"
+			boss_warning_label.visible = true
+		elif boss3_alive:
 			boss_warning_label.text = "🐻 WEREBEAR 🐻"
 			boss_warning_label.visible = true
 		elif game_won:
