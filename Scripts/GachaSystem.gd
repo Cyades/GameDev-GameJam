@@ -44,6 +44,7 @@ var result_name_label: Label
 var result_rarity_label: Label
 var result_info_label: Label
 var close_button: Button
+var subtitle_label: Label
 
 # Spin state
 var is_spinning: bool = false
@@ -94,6 +95,11 @@ func _open_gacha_ui(player: Node2D) -> void:
 	# Build UI if needed
 	if gacha_canvas == null:
 		_create_gacha_ui()
+	
+	# Update subtitle to show actual player level
+	if subtitle_label != null and pending_player != null:
+		var player_lvl: int = pending_player.get("current_level") as int if pending_player.get("current_level") != null else 1
+		subtitle_label.text = "Level " + str(player_lvl) + " reached! Recruit a companion!"
 	
 	# Reset UI state
 	slot_strip.position.x = 0
@@ -301,10 +307,16 @@ func _spawn_companion_from_result() -> void:
 		if companion.get(dmg_prop) != null:
 			companion.set(dmg_prop, int(companion.get(dmg_prop) * level_multiplier))
 	
-	var offset := Vector2(randf_range(-30, 30), randf_range(-30, 30))
-	companion.global_position = pending_player.global_position + offset
-	
+	# Use collision-safe spawn position via Main.gd helper
 	var main := pending_player.get_parent()
+	var spawn_pos: Vector2
+	if main != null and main.has_method("get_safe_companion_position"):
+		spawn_pos = main.get_safe_companion_position(pending_player.global_position)
+	else:
+		var offset := Vector2(randf_range(-30, 30), randf_range(-30, 30))
+		spawn_pos = pending_player.global_position + offset
+	companion.global_position = spawn_pos
+	
 	if main:
 		main.add_child(companion)
 	
@@ -366,11 +378,11 @@ func _create_gacha_ui() -> void:
 	vbox.add_child(title)
 	
 	# ── Subtitle ──
-	var subtitle := Label.new()
-	subtitle.text = "Level 5 reached! Recruit a companion!"
-	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	UITheme.apply_label(subtitle, 10, UITheme.MUTED_TEXT, 0.65)
-	vbox.add_child(subtitle)
+	subtitle_label = Label.new()
+	subtitle_label.text = "Recruit a companion!"
+	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	UITheme.apply_label(subtitle_label, 10, UITheme.MUTED_TEXT, 0.65)
+	vbox.add_child(subtitle_label)
 	
 	var spacer1 := Control.new()
 	spacer1.custom_minimum_size = Vector2(0, 4)

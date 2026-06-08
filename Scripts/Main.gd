@@ -344,7 +344,7 @@ func _on_enemy_spawn_timer_timeout() -> void:
 	if enemy.get("max_health") != null:
 		enemy.set("max_health", int(enemy.get("max_health") * hp_multiplier))
 	
-	enemy.global_position = _get_spawn_position_outside_camera()
+	enemy.global_position = _get_safe_spawn_position()
 	enemy_container.add_child(enemy)
 	
 	# Track kills via tree_exiting
@@ -364,7 +364,7 @@ func _spawn_boss(boss_scene: PackedScene, boss_index: int) -> void:
 		if boss.get("max_health") != null:
 			boss.set("max_health", 1500)
 			
-	boss.global_position = _get_spawn_position_outside_camera()
+	boss.global_position = _get_safe_spawn_position()
 	enemy_container.add_child(boss)
 	_show_boss_warning_once(_get_boss_display_name(boss_index), UITheme.RUBY)
 	
@@ -425,6 +425,54 @@ func _get_spawn_position_outside_camera() -> Vector2:
 		clampf(raw_pos.x, -limit, limit),
 		clampf(raw_pos.y, -limit, limit)
 	)
+
+## Returns a spawn position that does NOT overlap environment collisions
+## (buildings, rocks, trees). Retries up to max_attempts before falling back.
+func _get_safe_spawn_position(max_attempts: int = 15) -> Vector2:
+	for i in range(max_attempts):
+		var pos := _get_spawn_position_outside_camera()
+		if not _is_position_in_environment_collision(pos):
+			return pos
+	# Fallback: return the raw position to avoid infinite loop
+	return _get_spawn_position_outside_camera()
+
+## Public helper so GachaSystem can also spawn companions at safe positions.
+func get_safe_companion_position(near_pos: Vector2, spread: float = 60.0) -> Vector2:
+	for i in range(10):
+		var offset := Vector2(randf_range(-spread, spread), randf_range(-spread, spread))
+		var candidate := near_pos + offset
+		# Clamp inside arena
+		var wall_margin := 24.0
+		var limit := ARENA_HALF_SIZE - wall_margin
+		candidate.x = clampf(candidate.x, -limit, limit)
+		candidate.y = clampf(candidate.y, -limit, limit)
+		if not _is_position_in_environment_collision(candidate):
+			return candidate
+	return near_pos
+
+## Checks whether a world position overlaps with any environment collision shape.
+func _is_position_in_environment_collision(pos: Vector2) -> bool:
+	var space_state := get_world_2d().direct_space_state
+	if space_state == null:
+		return false
+	# Use a small circle shape for the point query
+	var query := PhysicsShapeQueryParameters2D.new()
+	var circle := CircleShape2D.new()
+	circle.radius = 12.0  # Small probe radius
+	query.shape = circle
+	query.transform = Transform2D(0.0, pos)
+	query.collision_mask = 1  # Layer 1 — same as EnvironmentCollisions
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	var results := space_state.intersect_shape(query, 1)
+	if results.is_empty():
+		return false
+	# Check that the hit body is actually EnvironmentCollisions, not a player/enemy
+	for result in results:
+		var collider = result.get("collider")
+		if collider != null and collider.name == "EnvironmentCollisions":
+			return true
+	return false
 
 func get_elapsed_time() -> float: return elapsed_time
 func get_kill_count() -> int: return kill_count
