@@ -31,7 +31,7 @@ func _ready() -> void:
 
 	if not collide_with_bodies:
 		collision_layer = 0
-		collision_mask = 0
+		collision_mask = 1
 
 	health = max_health
 	_setup_combat_areas()

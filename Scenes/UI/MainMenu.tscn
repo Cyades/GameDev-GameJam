@@ -1,11 +1,8 @@
 [gd_scene format=3 uid="uid://biac0h6bm34vk"]
 
 [ext_resource type="Script" uid="uid://bsvsxqibbefxt" path="res://Scripts/MainMenu.gd" id="1_script"]
-[ext_resource type="FontFile" uid="uid://by3ca6boy2a2b" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Font/NormalFont.ttf" id="2_font"]
-[ext_resource type="Texture2D" uid="uid://cxvykcjnqrlfo" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_normal.png" id="3_btn"]
-[ext_resource type="Texture2D" uid="uid://bnma7nawqspos" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_hover.png" id="4_btn"]
-[ext_resource type="Texture2D" uid="uid://uprgftekmlrj" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_pressed.png" id="5_btn"]
-[ext_resource type="PackedScene" uid="uid://bufco4s2txryu" path="res://Scenes/UI/SettingsMenu.tscn" id="6_settings"]
+[ext_resource type="PackedScene" uid="uid://bufco4s2txryu" path="res://Scenes/UI/SettingsMenu.tscn" id="2_settings"]
+[ext_resource type="Script" path="res://Scripts/MainMenuBackdrop.gd" id="3_backdrop"]
 
 [node name="MainMenu" type="CanvasLayer" unique_id=1147833061]
 script = ExtResource("1_script")
@@ -18,108 +15,82 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="ColorRect" parent="Control" unique_id=1232051132]
+[node name="AmbientOverlay" type="Control" parent="Control"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.121569, 0.121569, 0.121569, 1)
+mouse_filter = 2
+script = ExtResource("3_backdrop")
 
-[node name="Title" type="Label" parent="Control" unique_id=744267015]
+[node name="TitleBlock" type="VBoxContainer" parent="Control"]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 80.0
-offset_bottom = 130.0
+offset_top = 22.0
+offset_bottom = 102.0
 grow_horizontal = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 48
-text = "Legion Of Luck"
-horizontal_alignment = 1
+theme_override_constants/separation = 2
+alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control" unique_id=1914311576]
+[node name="TitleShadow" type="Label" parent="Control/TitleBlock"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+text = "LEGION OF LUCK"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Control/TitleBlock"]
+layout_mode = 2
+text = "Recruit. Survive. Defy the horde."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MenuPanel" type="PanelContainer" parent="Control"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -20.0
-offset_right = 100.0
-offset_bottom = 150.0
+offset_left = -105.0
+offset_top = 12.0
+offset_right = 105.0
+offset_bottom = 116.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 15
 
-[node name="PlayButton" type="TextureButton" parent="Control/VBoxContainer" unique_id=1949866568]
-texture_filter = 1
-custom_minimum_size = Vector2(200, 40)
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/MenuPanel"]
 layout_mode = 2
-texture_normal = ExtResource("3_btn")
-texture_pressed = ExtResource("5_btn")
-texture_hover = ExtResource("4_btn")
-ignore_texture_size = true
-stretch_mode = 5
+theme_override_constants/separation = 8
+alignment = 1
 
-[node name="Label" type="Label" parent="Control/VBoxContainer/PlayButton" unique_id=924681131]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("2_font")
+[node name="PlayButton" type="Button" parent="Control/MenuPanel/VBoxContainer" unique_id=1949866568]
+layout_mode = 2
 text = "PLAY"
-horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="SettingsButton" type="TextureButton" parent="Control/VBoxContainer" unique_id=2025405066]
-texture_filter = 1
-custom_minimum_size = Vector2(200, 40)
+[node name="SettingsButton" type="Button" parent="Control/MenuPanel/VBoxContainer" unique_id=2025405066]
 layout_mode = 2
-texture_normal = ExtResource("3_btn")
-texture_pressed = ExtResource("5_btn")
-texture_hover = ExtResource("4_btn")
-ignore_texture_size = true
-stretch_mode = 0
-
-[node name="Label" type="Label" parent="Control/VBoxContainer/SettingsButton" unique_id=361053053]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("2_font")
 text = "SETTINGS"
-horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="QuitButton" type="TextureButton" parent="Control/VBoxContainer" unique_id=586954115]
-texture_filter = 1
-custom_minimum_size = Vector2(200, 40)
+[node name="QuitButton" type="Button" parent="Control/MenuPanel/VBoxContainer" unique_id=586954115]
 layout_mode = 2
-texture_normal = ExtResource("3_btn")
-texture_pressed = ExtResource("5_btn")
-texture_hover = ExtResource("4_btn")
-ignore_texture_size = true
-stretch_mode = 5
+text = "QUIT"
 
-[node name="Label" type="Label" parent="Control/VBoxContainer/QuitButton" unique_id=963987195]
+[node name="FooterLabel" type="Label" parent="Control"]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -28.0
+offset_bottom = -8.0
 grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("2_font")
-text = "QUIT"
+grow_vertical = 0
+text = "Game Jam Build"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SettingsMenu" parent="." unique_id=1340166152 instance=ExtResource("6_settings")]
-offset_left = 3.0
-offset_right = 3.0
+[node name="SettingsMenu" parent="." unique_id=1340166152 instance=ExtResource("2_settings")]

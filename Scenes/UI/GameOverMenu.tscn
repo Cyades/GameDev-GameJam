@@ -1,10 +1,6 @@
 [gd_scene format=3 uid="uid://ctqyiyidqidku"]
 
 [ext_resource type="Script" uid="uid://b5kofk2ggflnf" path="res://Scripts/GameOverMenu.gd" id="1_script"]
-[ext_resource type="FontFile" uid="uid://by3ca6boy2a2b" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Font/NormalFont.ttf" id="2_font"]
-[ext_resource type="Texture2D" uid="uid://cxvykcjnqrlfo" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_normal.png" id="3_btn"]
-[ext_resource type="Texture2D" uid="uid://bnma7nawqspos" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_hover.png" id="4_btn"]
-[ext_resource type="Texture2D" uid="uid://uprgftekmlrj" path="res://Assets GameJam/Ninja Adventure - Asset Pack/Ui/Theme/Theme Wood/button_pressed.png" id="5_btn"]
 
 [node name="GameOverMenu" type="CanvasLayer" unique_id=1473594196]
 process_mode = 3
@@ -26,77 +22,44 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.3, 0, 0, 0.7)
+color = Color(0.16, 0.012, 0.012, 0.78)
 
-[node name="Title" type="Label" parent="Control" unique_id=664670609]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_top = 80.0
-offset_bottom = 120.0
-grow_horizontal = 2
-theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 48
-text = "GAME OVER"
-horizontal_alignment = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Control" unique_id=1786314315]
+[node name="DialogPanel" type="PanelContainer" parent="Control"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = 20.0
-offset_right = 100.0
-offset_bottom = 150.0
+offset_left = -154.0
+offset_top = -120.0
+offset_right = 154.0
+offset_bottom = 118.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 15
 
-[node name="RetryButton" type="TextureButton" parent="Control/VBoxContainer" unique_id=28247996]
-texture_filter = 1
-custom_minimum_size = Vector2(200, 40)
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/DialogPanel" unique_id=1786314315]
 layout_mode = 2
-texture_normal = ExtResource("3_btn")
-texture_pressed = ExtResource("5_btn")
-texture_hover = ExtResource("4_btn")
-ignore_texture_size = true
-stretch_mode = 5
+theme_override_constants/separation = 10
+alignment = 1
 
-[node name="Label" type="Label" parent="Control/VBoxContainer/RetryButton" unique_id=1052755493]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("2_font")
+[node name="Title" type="Label" parent="Control/DialogPanel/VBoxContainer" unique_id=664670609]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+text = "GAME OVER"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Control/DialogPanel/VBoxContainer"]
+layout_mode = 2
+text = "The legion falls, but luck can turn."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RetryButton" type="Button" parent="Control/DialogPanel/VBoxContainer" unique_id=28247996]
+layout_mode = 2
 text = "RETRY"
-horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="MainMenuButton" type="TextureButton" parent="Control/VBoxContainer" unique_id=227175695]
-texture_filter = 1
-custom_minimum_size = Vector2(100, 40)
+[node name="MainMenuButton" type="Button" parent="Control/DialogPanel/VBoxContainer" unique_id=227175695]
 layout_mode = 2
-texture_normal = ExtResource("3_btn")
-texture_pressed = ExtResource("5_btn")
-texture_hover = ExtResource("4_btn")
-ignore_texture_size = true
-stretch_mode = 0
-
-[node name="Label" type="Label" parent="Control/VBoxContainer/MainMenuButton" unique_id=544290014]
-texture_filter = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("2_font")
 text = "MAIN MENU"
-horizontal_alignment = 1
-vertical_alignment = 1

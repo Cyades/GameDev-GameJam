@@ -28,7 +28,7 @@ var dash_moved: bool = false; var teleported: bool = false
 
 func _ready() -> void:
 	if not is_in_group("enemy"): add_to_group("enemy")
-	collision_layer = 0; collision_mask = 0; health = max_health
+	collision_layer = 0; collision_mask = 1; health = max_health
 	_setup_combat_areas()
 	target = CombatUtils.find_priority_target(global_position, get_tree())
 	_configure_animation_loops()

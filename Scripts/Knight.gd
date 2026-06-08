@@ -30,7 +30,7 @@ func _ready() -> void:
 	if not is_in_group("player"): add_to_group("player")
 	health = max_health
 	leader = get_tree().get_first_node_in_group("player") as Node2D
-	collision_layer = 0; collision_mask = 0
+	collision_layer = 0; collision_mask = 1
 	_configure_animation_loops()
 	animated_sprite.speed_scale = 1.5
 	if not animated_sprite.animation_finished.is_connected(_on_animation_finished):

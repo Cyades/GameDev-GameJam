@@ -54,7 +54,7 @@ func _ready() -> void:
 
 	# Disable body‑to‑body physics (ghost companion)
 	collision_layer = 0
-	collision_mask  = 0
+	collision_mask  = 1
 
 	_configure_animation_loops()
 	animated_sprite.speed_scale = 1.5

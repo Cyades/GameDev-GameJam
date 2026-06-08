@@ -12,8 +12,9 @@ extends CharacterBody2D
 @export var attack03_damage: int = 12  # Ground slam — AOE + knockback
 @export var aoe_radius: float = 60.0
 @export var knockback_strength: float = 250.0
-@export var hurtbox_radius: float = 18.0
-@export var contact_hitbox_radius: float = 16.0
+@export var hurtbox_radius: float = 27.0
+@export var contact_hitbox_radius: float = 24.0
+@export var hp_bar_world_offset: Vector2 = Vector2(-25.0, -80.0)
 
 const MOVEMENT_ANIMATIONS: Array[StringName] = [&"idle", &"walk"]
 const ACTION_ANIMATIONS: Array[StringName] = [&"attack01", &"attack02", &"attack03", &"hurt", &"death"]
@@ -34,9 +35,9 @@ signal boss_defeated
 func _ready() -> void:
 	if not is_in_group("enemy"): add_to_group("enemy")
 	if not is_in_group("boss"): add_to_group("boss")
-	collision_layer = 0; collision_mask = 0; health = max_health
-	# Make boss BIG — scale 2x
-	animated_sprite.scale = Vector2(2.0, 2.0)
+	collision_layer = 0; collision_mask = 1; health = max_health
+	# Make boss BIG — scale 3x
+	animated_sprite.scale = Vector2(3.0, 3.0)
 	_setup_combat_areas()
 	_setup_hp_bar()
 	target = CombatUtils.find_priority_target(global_position, get_tree())
@@ -117,10 +118,9 @@ func _setup_hp_bar() -> void:
 	hp_bar.texture_progress = preload("res://Assets GameJam/Pixel Health Bar/Bar/health bar.png")
 	hp_bar.z_index = 20
 	hp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hp_bar.scale = Vector2(0.8, 0.8) / scale
-	var visual_scale = scale.y
-	if animated_sprite: visual_scale *= animated_sprite.scale.y
-	hp_bar.position = Vector2(-25 / scale.x, -50 * visual_scale / scale.y)
+	var parent_scale := Vector2(max(abs(scale.x), 0.001), max(abs(scale.y), 0.001))
+	hp_bar.scale = Vector2(0.55, 0.55) / parent_scale
+	hp_bar.position = Vector2(hp_bar_world_offset.x / parent_scale.x, hp_bar_world_offset.y / parent_scale.y)
 	hp_bar.max_value = max_health
 	hp_bar.value = health
 	add_child(hp_bar)

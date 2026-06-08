@@ -1,5 +1,7 @@
 extends CharacterBody2D
 
+const UITheme = preload("res://Scripts/UITheme.gd")
+
 @export var walk_speed: float = 150.0
 @export var sprint_speed_multiplier: float = 1.4
 @export var max_health: int = 20
@@ -59,6 +61,7 @@ var pickup_area: Area2D
 # HUD EXP bar references
 var exp_canvas_layer: CanvasLayer
 var exp_bar: ProgressBar
+var level_panel: PanelContainer
 var level_label: Label
 
 # Gacha system reference (set by Main.gd)
@@ -104,18 +107,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_E:
 		mouse_aim_enabled = not mouse_aim_enabled
 		
-	if event.is_action_pressed("die"):
-		_trigger_death()
-		return
-
 	if _handle_attack_switch_input(event):
 		return
 
 	if is_dead or _is_action_locked():
 		return
-
-	if event.is_action_pressed("hurt"):
-		_play_animation(&"hurt")
 
 func _physics_process(_delta: float) -> void:
 	if is_dead or _is_action_locked():
@@ -517,6 +513,45 @@ func _update_health_bar() -> void:
 # ─── EXP / Level system ───────────────────────────────────────────────────────
 
 func _create_exp_hud() -> void:
+	exp_canvas_layer = CanvasLayer.new()
+	exp_canvas_layer.name = "EXPCanvasLayer"
+	exp_canvas_layer.layer = 20
+	add_child(exp_canvas_layer)
+
+	exp_bar = ProgressBar.new()
+	exp_bar.name = "EXPBar"
+	exp_bar.show_percentage = false
+	exp_bar.anchor_left = 0.0
+	exp_bar.anchor_top = 0.0
+	exp_bar.anchor_right = 1.0
+	exp_bar.anchor_bottom = 0.0
+	exp_bar.offset_left = 0.0
+	exp_bar.offset_top = 0.0
+	exp_bar.offset_right = 0.0
+	exp_bar.offset_bottom = 4.0
+	exp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	UITheme.apply_progress_bar(exp_bar, Color(0.20, 0.72, 1.0, 0.96), 4.0)
+	exp_canvas_layer.add_child(exp_bar)
+
+	level_panel = PanelContainer.new()
+	level_panel.name = "LevelPanel"
+	level_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	level_panel.position = Vector2(6.0, 8.0)
+	level_panel.size = Vector2(54.0, 17.0)
+	level_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	level_panel.add_theme_stylebox_override("panel", UITheme.thin_panel_style(Color(0.02, 0.018, 0.03, 0.82), Color(0.20, 0.72, 1.0, 0.55)))
+	exp_canvas_layer.add_child(level_panel)
+
+	level_label = Label.new()
+	level_label.name = "LevelLabel"
+	level_label.text = "LV 1"
+	level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	level_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	level_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	UITheme.apply_label(level_label, 7, UITheme.TEXT, 0.7)
+	level_panel.add_child(level_label)
+
+func _create_exp_hud_old() -> void:
 	# CanvasLayer so the EXP bar is fixed on screen
 	exp_canvas_layer = CanvasLayer.new()
 	exp_canvas_layer.name = "EXPCanvasLayer"
@@ -600,7 +635,7 @@ func _level_up() -> void:
 	current_level += 1
 	print("LEVEL UP! Now level: ", current_level)
 	if level_label != null:
-		level_label.text = "Lv. " + str(current_level)
+		level_label.text = "LV " + str(current_level)
 		
 	if level_up_sounds.size() > 0:
 		level_up_audio_player.stream = level_up_sounds[randi() % level_up_sounds.size()]

@@ -42,7 +42,7 @@ func _ready() -> void:
 
 	# Ghost body — no body‑to‑body physics
 	collision_layer = 0
-	collision_mask  = 0
+	collision_mask  = 1
 
 	health = max_health
 	_setup_combat_areas()

@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://2f5w2nywrvj" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Armored Skeleton/Armored Skeleton with shadows/Armored Skeleton-Hurt.png" id="4_alr10"]
 [ext_resource type="Texture2D" uid="uid://cx0uyr21yfm48" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Armored Skeleton/Armored Skeleton with shadows/Armored Skeleton-Idle.png" id="5_71vs4"]
 [ext_resource type="Texture2D" uid="uid://vvraj4ue0ap5" path="res://Assets GameJam/Tiny RPG Character Asset Pack v1.03 -Full 20 Characters/Characters(100x100)/Armored Skeleton/Armored Skeleton with shadows/Armored Skeleton-Walk.png" id="6_uhb20"]
-
+[ext_resource type="Script" uid="uid://dm4na15m8yky5" path="res://Scripts/ArmoredSkeleton.gd" id="7_script"]
 [sub_resource type="AtlasTexture" id="AtlasTexture_fvn6n"]
 atlas = ExtResource("1_begr7")
 region = Rect2(0, 0, 100, 100)
@@ -313,12 +313,22 @@ animations = [{
 "speed": 7.0
 }]
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_armored_skeleton"]
+radius = 8.0
+height = 24.0
+
 [node name="CharacterBody2D" type="CharacterBody2D" unique_id=754814100]
+script = ExtResource("7_script")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=986518255]
 texture_filter = 1
+position = Vector2(0, 4)
 sprite_frames = SubResource("SpriteFrames_mn5ox")
 animation = &"attack02"
 frame_progress = 0.7429646
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1977879955]
+position = Vector2(0, 4)
+shape = SubResource("CapsuleShape2D_armored_skeleton")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=636693205]
