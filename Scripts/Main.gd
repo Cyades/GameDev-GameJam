@@ -572,6 +572,73 @@ func _create_timer_hud() -> void:
 	boss_warning_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	boss_warning_panel.add_child(boss_warning_label)
 
+	# ── Keybind Guide — bottom right ──
+	_create_keybind_guide()
+
+func _create_keybind_guide() -> void:
+	var keybind_panel := PanelContainer.new()
+	keybind_panel.name = "KeybindPanel"
+	keybind_panel.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	keybind_panel.position = Vector2(-118, -88)
+	keybind_panel.size = Vector2(110, 82)
+	keybind_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	keybind_panel.add_theme_stylebox_override("panel", UITheme.thin_panel_style(Color(0.02, 0.018, 0.03, 0.62), Color(1.0, 0.74, 0.22, 0.20)))
+	timer_canvas.add_child(keybind_panel)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 1)
+	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	keybind_panel.add_child(vbox)
+
+	# Title
+	var title := Label.new()
+	title.text = "CONTROLS"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	UITheme.apply_label(title, 6, UITheme.GOLD_LIGHT, 0.5)
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(title)
+
+	# Separator line
+	var sep := HSeparator.new()
+	sep.add_theme_stylebox_override("separator", StyleBoxLine.new())
+	sep.add_theme_constant_override("separation", 2)
+	sep.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(sep)
+
+	# Keybind entries
+	var binds: Array[Array] = [
+		["W A S D", "Move"],
+		["Shift", "Sprint"],
+		["1 / 2 / 3", "Attack"],
+		["E", "Mouse Aim"],
+		["ESC", "Pause"],
+	]
+
+	for bind in binds:
+		var row := HBoxContainer.new()
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.add_theme_constant_override("separation", 4)
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		vbox.add_child(row)
+
+		var key_label := Label.new()
+		key_label.text = bind[0]
+		key_label.custom_minimum_size = Vector2(50, 0)
+		key_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		UITheme.apply_label(key_label, 6, UITheme.GOLD, 0.4)
+		key_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(key_label)
+
+		var action_label := Label.new()
+		action_label.text = bind[1]
+		action_label.custom_minimum_size = Vector2(42, 0)
+		action_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		UITheme.apply_label(action_label, 6, UITheme.MUTED_TEXT, 0.35)
+		action_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(action_label)
+
+
+
 func _set_boss_warning(text: String, color: Color = Color(0.92, 0.18, 0.14, 1.0)) -> void:
 	if boss_warning_label == null:
 		return

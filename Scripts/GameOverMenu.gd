@@ -50,6 +50,8 @@ func set_victory() -> void:
 		await ready
 	title_label.text = "VICTORY"
 	subtitle_label.text = "The legion stands absolute."
+	# Change overlay from red to dark golden tint for victory
+	overlay.color = Color(0.06, 0.05, 0.02, 0.72)
 	dialog_panel.add_theme_stylebox_override("panel", UITheme.panel_style(Color(0.02, 0.03, 0.05, 0.94), UITheme.GOLD, 8, 2, 16))
 	UITheme.apply_title_label(title_label, 32, UITheme.GOLD)
 	UITheme.apply_label(subtitle_label, 9, UITheme.TEXT, 0.75)
